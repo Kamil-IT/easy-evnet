@@ -2,7 +2,6 @@ package com.example.app.config.reciver;
 
 import com.example.easyevnet.WorkflowExecutor;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
-import org.apache.kafka.common.serialization.LongDeserializer;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -18,7 +17,7 @@ public class OrchestraConfiguration {
 
     @Bean
     WorkflowExecutor orchestraExecutor() {
-        return new WorkflowExecutor(brokerUrl, kafkaProperties());
+        return new WorkflowExecutor(kafkaProperties());
     }
 
 

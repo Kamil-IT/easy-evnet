@@ -19,9 +19,6 @@ public class ReceiveMessageService {
 
     private final WorkflowExecutor workflowExecutor;
 
-    @Value(value = "${spring.kafka.bootstrap-servers}")
-    private String bootstrapAddress;
-
     @PostConstruct
     public void initializeOrchestra() {
         workflowExecutor.startOrderedWorkflow(123, orchestra());
@@ -31,6 +28,10 @@ public class ReceiveMessageService {
         return new OrchestraBuilder()
                 .addStagesInOrder(log::info, ShopEventType.CREATE_ORDER)
                 .onError(e -> log.error("ERROR in ShopEventType.CREATE_ORDER"))
+                .timeout(Duration.ofSeconds(10))
+                .nextStage()
+                .addStagesInOrder(log::info, ShopEventType.CHECK_PAYMENT)
+                .onError(e -> log.error("ERROR in ShopEventType.CHECK_PAYMENT"))
                 .timeout(Duration.ofSeconds(10))
                 .nextStage()
                 .addStagesInOrder(log::info, ShopEventType.CANCEL_ORDER)

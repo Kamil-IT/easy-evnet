@@ -1,5 +1,6 @@
 package com.example.easyevnet;
 
+import com.example.easyevnet.monitor.EventPublisher;
 import com.example.easyevnet.broker.kafka.config.KafkaListenerConfig;
 import com.example.easyevnet.orchestra.OrchestraExecutor;
 import com.example.easyevnet.orchestra.StageExecutor;
@@ -15,8 +16,8 @@ public class WorkflowExecutor<ID> {
     private final Map<ID, CompletableFuture<Boolean>> threads = new ConcurrentHashMap<>();
     private final KafkaListenerConfig kafkaListenerConfig;
 
-    public WorkflowExecutor(String broker, Properties kafkaProperties) {
-        this.kafkaListenerConfig = new KafkaListenerConfig(broker, kafkaProperties);
+    public WorkflowExecutor(Properties kafkaProperties) {
+        this.kafkaListenerConfig = new KafkaListenerConfig(kafkaProperties);
     }
 
     public void startOrderedWorkflow(ID workflowIdentifier, Orchestra orchestra) {

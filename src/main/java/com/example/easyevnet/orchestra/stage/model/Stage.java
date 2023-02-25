@@ -9,4 +9,11 @@ public record Stage<T>(
         String queueName,
         Consumer<Exception> onError,
         Duration timeout) {
+
+    public boolean isNameEqual(String name) {
+        return name != null && name.equals(this.name);
+    }
+    public boolean isNameEqual(Stage<?> stage) {
+        return stage != null && isNameEqual(stage.name);
+    }
 }
