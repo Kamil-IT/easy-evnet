@@ -20,6 +20,7 @@ public class StageExecutor<ID> {
     private final EventPublisher<WorkflowFinishedEvent> publisher;
 
     private final Orchestra orchestra;
+    @Getter
     private final ID workflowIdentifier;
     @Getter
     private Stage<?> currentStageData = null;

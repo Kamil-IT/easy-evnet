@@ -1,14 +1,17 @@
 package com.example.app.config.reciver;
 
 import com.example.easyevnet.WorkflowExecutor;
+import com.example.easyevnet.orchestra.database.StatePersistenceService;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 
 import java.util.Properties;
 
+@Profile("!test")
 @Configuration
 public class OrchestraConfiguration {
 
@@ -16,8 +19,8 @@ public class OrchestraConfiguration {
     private String brokerUrl;
 
     @Bean
-    WorkflowExecutor orchestraExecutor() {
-        return new WorkflowExecutor(kafkaProperties());
+    WorkflowExecutor orchestraExecutor(StatePersistenceService statePersistenceService) {
+        return new WorkflowExecutor(kafkaProperties(), statePersistenceService);
     }
 
 

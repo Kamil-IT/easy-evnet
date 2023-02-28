@@ -3,6 +3,7 @@ package com.example.easyevnet;
 import com.example.easyevnet.broker.kafka.config.KafkaListenerConfig;
 import com.example.easyevnet.orchestra.OrchestraExecutor;
 import com.example.easyevnet.orchestra.StageExecutor;
+import com.example.easyevnet.orchestra.database.StatePersistenceService;
 import com.example.easyevnet.orchestra.orchestra.model.Orchestra;
 
 import java.util.Map;
@@ -14,14 +15,16 @@ public class WorkflowExecutor<ID> {
 
     private final Map<ID, CompletableFuture<Boolean>> threads = new ConcurrentHashMap<>();
     private final KafkaListenerConfig kafkaListenerConfig;
+    private final StatePersistenceService statePersistenceService;
 
-    public WorkflowExecutor(Properties kafkaProperties) {
+    public WorkflowExecutor(Properties kafkaProperties, StatePersistenceService statePersistenceService) {
         this.kafkaListenerConfig = new KafkaListenerConfig(kafkaProperties);
+        this.statePersistenceService = statePersistenceService;
     }
 
     public void startOrderedWorkflow(ID workflowIdentifier, Orchestra orchestra) {
         StageExecutor<ID> stageExecutor = new StageExecutor<>(orchestra, workflowIdentifier);
-        OrchestraExecutor<ID> orchestraExecutor = new OrchestraExecutor<>(stageExecutor, this.kafkaListenerConfig);
+        OrchestraExecutor<ID> orchestraExecutor = new OrchestraExecutor<>(stageExecutor, this.kafkaListenerConfig, statePersistenceService);
 
         CompletableFuture<Boolean> async = CompletableFuture.supplyAsync(orchestraExecutor::startOrchestra);
         threads.put(workflowIdentifier, async);
