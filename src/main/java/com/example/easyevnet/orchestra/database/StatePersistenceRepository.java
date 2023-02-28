@@ -13,7 +13,7 @@ public interface StatePersistenceRepository extends Repository<StatePersistence,
 
     StatePersistence save(StatePersistence entity);
 
-    Optional<StatePersistence> findFirstByBusinessIdAndStateName(String businessId, String stateName);
+    Optional<StatePersistence> findFirstByBusinessIdAndStateNameAndTopic(String businessId, String stateName, String topic);
 
     List<StatePersistence> findAllByBusinessId(String businessId);
 

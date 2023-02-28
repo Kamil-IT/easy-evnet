@@ -13,6 +13,8 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class WorkflowExecutor<ID> {
 
+//    TODO: Dodaj rejest wszystkich workflow bazuacy na eventach i pozniej dodaj to do api
+
     private final Map<ID, CompletableFuture<Boolean>> threads = new ConcurrentHashMap<>();
     private final KafkaListenerConfig kafkaListenerConfig;
     private final StatePersistenceService statePersistenceService;
@@ -22,6 +24,7 @@ public class WorkflowExecutor<ID> {
         this.statePersistenceService = statePersistenceService;
     }
 
+//    TODO: Should be in container
     public void startOrderedWorkflow(ID workflowIdentifier, Orchestra orchestra) {
         StageExecutor<ID> stageExecutor = new StageExecutor<>(orchestra, workflowIdentifier);
         OrchestraExecutor<ID> orchestraExecutor = new OrchestraExecutor<>(stageExecutor, this.kafkaListenerConfig, statePersistenceService);

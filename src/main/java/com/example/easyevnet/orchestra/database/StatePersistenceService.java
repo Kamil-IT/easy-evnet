@@ -1,12 +1,8 @@
 package com.example.easyevnet.orchestra.database;
 
-import jakarta.annotation.PostConstruct;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import javax.sql.DataSource;
 
-import org.springframework.boot.jdbc.DataSourceBuilder;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -19,8 +15,8 @@ public class StatePersistenceService {
     private final StatePersistenceRepository repository;
 
     @Transactional
-    public boolean isAbleToProcessIfYesStart(String id, String stateName) {
-        Optional<StatePersistence> statePersistence = repository.findFirstByBusinessIdAndStateName(id, stateName);
+    public boolean isAbleToProcessIfYesStart(String id, String stateName, String topic) {
+        Optional<StatePersistence> statePersistence = repository.findFirstByBusinessIdAndStateNameAndTopic(id, stateName, topic);
 
         if (statePersistence.isPresent()) {
             if (StateStatus.PROCESSING.equals(statePersistence.get().getStatus()) ||
@@ -38,16 +34,16 @@ public class StatePersistenceService {
         }
     }
 
-    public void finishProcessing(String id, String stateName) {
-        Optional<StatePersistence> statePersistence = repository.findFirstByBusinessIdAndStateName(id, stateName);
+    public void finishProcessing(String id, String stateName, String topic) {
+        Optional<StatePersistence> statePersistence = repository.findFirstByBusinessIdAndStateNameAndTopic(id, stateName, topic);
         statePersistence.map(state -> {
             state.setStatus(StateStatus.DONE.name());
             return saveState(state);
         }).orElseThrow();
     }
 
-    public void markProcessAsError(String id, String stateName, String message) {
-        Optional<StatePersistence> statePersistence = repository.findFirstByBusinessIdAndStateName(id, stateName);
+    public void markProcessAsError(String id, String stateName, String topic, String message) {
+        Optional<StatePersistence> statePersistence = repository.findFirstByBusinessIdAndStateNameAndTopic(id, stateName, topic);
         statePersistence.map(state -> {
             state.setStatus(StateStatus.ERROR.name());
             state.setErrorMessage(message);

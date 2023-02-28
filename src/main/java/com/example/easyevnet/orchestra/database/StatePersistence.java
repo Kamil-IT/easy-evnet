@@ -35,6 +35,7 @@ public class StatePersistence {
     private String businessId;
 
     private String stateName;
+    private String topic;
 
     @CreationTimestamp
     @Temporal(TemporalType.TIMESTAMP)

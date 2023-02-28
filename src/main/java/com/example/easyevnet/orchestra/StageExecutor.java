@@ -1,8 +1,8 @@
 package com.example.easyevnet.orchestra;
 
 import com.example.easyevnet.broker.kafka.model.ReceivedMessage;
-import com.example.easyevnet.monitor.EventPublisher;
-import com.example.easyevnet.monitor.WorkflowFinishedEvent;
+import com.example.easyevnet.monitor.event.EventPublisher;
+import com.example.easyevnet.monitor.event.WorkflowFinishedEvent;
 import com.example.easyevnet.orchestra.orchestra.model.Orchestra;
 import com.example.easyevnet.orchestra.stage.model.Stage;
 import com.example.easyevnet.orchestra.stage.processor.ProcessorOrderedStage;
@@ -23,6 +23,7 @@ public class StageExecutor<ID> {
     @Getter
     private final ID workflowIdentifier;
     @Getter
+//    TODO: Should be get from db
     private Stage<?> currentStageData = null;
 
     public StageExecutor(Orchestra orchestra, ID workflowIdentifier) {
@@ -31,6 +32,7 @@ public class StageExecutor<ID> {
         this.publisher = EventPublisher.getInstanceWorkflowFinished();
     }
 
+//    TODO: Not boolean add more complicated object for example message if fail
     public <E> boolean processNextStep(@Nullable String step, String body) {
         Stage<?> stageDataToProcess = orchestra.getAllStages()
                 .stream()

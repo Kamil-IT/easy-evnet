@@ -1,4 +1,4 @@
-package com.example.easyevnet.monitor;
+package com.example.easyevnet.monitor.event;
 
 public interface EventListener<T> {
 

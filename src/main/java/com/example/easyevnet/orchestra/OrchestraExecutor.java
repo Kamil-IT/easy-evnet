@@ -19,6 +19,7 @@ public class OrchestraExecutor<ID> {
     private final KafkaListenerConfig kafkaListenerConfig;
     private final StatePersistenceService statePersistenceService;
 
+//    This step should be in container not here
     public boolean startOrchestra() {
         List<String> topics = stageExecutor.getTopics();
 
@@ -28,10 +29,12 @@ public class OrchestraExecutor<ID> {
     }
 
     private void processNextStep(ConsumerRecord<String, String> rec) {
-        String stage = getStage(rec);
         String id = (String) stageExecutor.getWorkflowIdentifier();
+        String stage = getStage(rec);
+        String topic = rec.topic();
 
-        boolean ableToProcessIfYesStart = statePersistenceService.isAbleToProcessIfYesStart(id, stage);
+//        Should not add object if stage is not able to perform
+        boolean ableToProcessIfYesStart = statePersistenceService.isAbleToProcessIfYesStart(id, stage, topic);
 
         if (ableToProcessIfYesStart) {
             try {
@@ -40,12 +43,12 @@ public class OrchestraExecutor<ID> {
                     throw new IllegalArgumentException("Status processed with errors");
                 }
             } catch (Exception e) {
-                statePersistenceService.markProcessAsError(id, stage, e.getMessage());
+                statePersistenceService.markProcessAsError(id, stage, e.getMessage(), topic);
             }
 
-            statePersistenceService.finishProcessing(id, stage);
+            statePersistenceService.finishProcessing(id, stage, topic);
         } else {
-            statePersistenceService.markProcessAsError(id, stage, "Stage already done");
+            statePersistenceService.markProcessAsError(id, stage, "Stage already done", topic);
             log.error("stage already processed");
         }
 
