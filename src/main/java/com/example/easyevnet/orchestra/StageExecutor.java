@@ -1,8 +1,8 @@
 package com.example.easyevnet.orchestra;
 
+import com.example.easyevnet.broker.kafka.model.ReceivedMessage;
 import com.example.easyevnet.monitor.EventPublisher;
 import com.example.easyevnet.monitor.WorkflowFinishedEvent;
-import com.example.easyevnet.broker.kafka.model.ReceivedMessage;
 import com.example.easyevnet.orchestra.orchestra.model.Orchestra;
 import com.example.easyevnet.orchestra.stage.model.Stage;
 import com.example.easyevnet.orchestra.stage.processor.ProcessorOrderedStage;
@@ -22,7 +22,7 @@ public class StageExecutor<ID> {
     private final Orchestra orchestra;
     private final ID workflowIdentifier;
     @Getter
-    private Stage<?> currentStage = null;
+    private Stage<?> currentStageData = null;
 
     public StageExecutor(Orchestra orchestra, ID workflowIdentifier) {
         this.orchestra = orchestra;
@@ -31,9 +31,9 @@ public class StageExecutor<ID> {
     }
 
     public <E> boolean processNextStep(@Nullable String step, String body) {
-        Stage<?> stageToProcess = orchestra.getAllStages()
+        Stage<?> stageDataToProcess = orchestra.getAllStages()
                 .stream()
-                .filter(stage -> stage.isNameEqual(step))
+                .filter(stage -> stage.stageData().isNameEqual(step))
                 .findFirst()
                 .orElseThrow();
 
@@ -41,31 +41,31 @@ public class StageExecutor<ID> {
         Boolean result = null;
 
 //        Może pomyśl o streamch
-        if (orchestra.getStages().contains(stageToProcess)) {
-            result = new ProcessorStage<>(stageToProcess)
-                    .processOrderStage(new ReceivedMessage<>(workflowIdentifier, body, new HashMap<>(), (Stage<String>) stageToProcess));
+        if (orchestra.getStageData().contains(stageDataToProcess)) {
+            result = new ProcessorStage<>(stageDataToProcess)
+                    .processOrderStage(new ReceivedMessage<>(workflowIdentifier, body, new HashMap<>(), (Stage<String>) stageDataToProcess));
 
-        } else if (orchestra.getStagesBrakingOrder().contains(stageToProcess)) {
-            result = new ProcessorStage<>(stageToProcess)
-                    .processOrderStage(new ReceivedMessage<>(workflowIdentifier, body, new HashMap<>(), (Stage<String>) stageToProcess));
+        } else if (orchestra.getStagesBrakingOrder().contains(stageDataToProcess)) {
+            result = new ProcessorStage<>(stageDataToProcess)
+                    .processOrderStage(new ReceivedMessage<>(workflowIdentifier, body, new HashMap<>(), (Stage<String>) stageDataToProcess));
 
-            currentStage = stageToProcess;
+            currentStageData = stageDataToProcess;
 
-        } else if (isNextOrderedStage(stageToProcess)) {
-            result = new ProcessorOrderedStage<>(stageToProcess)
-                    .processOrderStage(new ReceivedMessage<>(workflowIdentifier, body, new HashMap<>(), (Stage<String>) stageToProcess));
+        } else if (isNextOrderedStage(stageDataToProcess)) {
+            result = new ProcessorOrderedStage<>(stageDataToProcess)
+                    .processOrderStage(new ReceivedMessage<>(workflowIdentifier, body, new HashMap<>(), (Stage<String>) stageDataToProcess));
 
-            currentStage = stageToProcess;
+            currentStageData = stageDataToProcess;
 
         }
 
         if (result == null) {
-            log.error("Stage not found or stage already done: " + step + " " + stageToProcess);
+            log.error("Stage not found or stage already done: " + step + " " + stageDataToProcess);
 //            throw new IllegalArgumentException("Stage not found or stage already done");
             return false;
         }
 
-        if (currentStage != null && currentStage == orchestra.getLastStage()) {
+        if (currentStageData != null && currentStageData == orchestra.getLastStage()) {
             publisher.publish(new WorkflowFinishedEvent("Stage completed. Id: " + workflowIdentifier));
             log.info("Stage completed. Id: " + workflowIdentifier);
         }
@@ -73,9 +73,10 @@ public class StageExecutor<ID> {
         return result;
     }
 
-    private boolean isNextOrderedStage(Stage<?> stageToProcess) {
-        return orchestra.getStagesInOrder().contains(stageToProcess) &&
-                orchestra.getOrderedNextStage(currentStage).map(nextStage -> nextStage.equals(stageToProcess)).orElse(false);
+    private boolean isNextOrderedStage(Stage<?> stageDataToProcess) {
+        return orchestra.getStagesInOrder().contains(stageDataToProcess) &&
+                orchestra.getOrderedNextStage(currentStageData)
+                        .map(nextStage -> nextStage.equals(stageDataToProcess)).orElse(false);
     }
 
     public List<String> getTopics() {

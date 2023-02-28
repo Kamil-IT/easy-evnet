@@ -2,7 +2,7 @@ package com.example.easyevnet;
 
 import com.example.app.bussines.ShopEventType;
 import com.example.easyevnet.monitor.EventPublisher;
-import com.example.easyevnet.orchestra.orchestra.builder.OrchestraBuilder;
+import com.example.easyevnet.orchestra.builder.OrchestraBuilder;
 import com.example.easyevnet.orchestra.orchestra.model.Orchestra;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.producer.ProducerConfig;
@@ -23,7 +23,6 @@ import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -90,15 +89,15 @@ class WorkflowExecutorTest {
 
     private Orchestra getOrchestra() {
         return new OrchestraBuilder()
-                .addStagesInOrder(System.out::println, ShopEventType.CREATE_ORDER)
+                .stageInOrder(System.out::println, ShopEventType.CREATE_ORDER)
                 .onError(e -> System.out.println("ERROR in ShopEventType.CREATE_ORDER"))
                 .timeout(Duration.ofSeconds(10))
                 .nextStage()
-                .addStagesInOrder(System.out::println, ShopEventType.CHECK_PAYMENT)
+                .stageInOrder(System.out::println, ShopEventType.CHECK_PAYMENT)
                 .onError(e -> System.out.println("ERROR in ShopEventType.CHECK_PAYMENT"))
                 .timeout(Duration.ofSeconds(10))
                 .nextStage()
-                .addStagesInOrder(System.out::println, ShopEventType.CANCEL_ORDER)
+                .stageInOrder(System.out::println, ShopEventType.CANCEL_ORDER)
                 .onError(e -> System.out.println("ERROR in ShopEventType.CANCEL_ORDER"))
                 .timeout(Duration.ofSeconds(10))
                 .build();

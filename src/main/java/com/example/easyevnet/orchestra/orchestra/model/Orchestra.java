@@ -1,6 +1,7 @@
 package com.example.easyevnet.orchestra.orchestra.model;
 
 import com.example.easyevnet.orchestra.stage.model.Stage;
+import com.example.easyevnet.orchestra.stage.model.StageData;
 import jakarta.annotation.Nullable;
 import lombok.Getter;
 
@@ -13,21 +14,21 @@ import java.util.stream.Stream;
 @Getter
 public class Orchestra {
 
-    private final List<Stage<?>> stages;
+    private final List<Stage<?>> stageData;
     private final List<Stage<?>> stagesInOrder;
     private final List<Stage<?>> stagesBrakingOrder;
 
-    public Orchestra(Collection<Stage<?>> stages, Collection<Stage<?>> stagesInOrder, Collection<Stage<?>> stagesBrakingOrder) {
-        this.stages = List.copyOf(stages);
+    public Orchestra(Collection<Stage<?>> stageData, Collection<Stage<?>> stagesInOrder, Collection<Stage<?>> stagesBrakingOrder) {
+        this.stageData = List.copyOf(stageData);
         this.stagesBrakingOrder = List.copyOf(stagesBrakingOrder);
         this.stagesInOrder = List.copyOf(stagesInOrder);
     }
 
-    public Optional<Stage<?>> getOrderedNextStage(@Nullable Stage<?> stage) {
-        if (stage == null) {
+    public Optional<Stage<?>> getOrderedNextStage(@Nullable Stage<?> stageData) {
+        if (stageData == null) {
             return getFirstStage();
         }
-        return Optional.of(stagesInOrder.indexOf(stage))
+        return Optional.of(stagesInOrder.indexOf(stageData))
                 .filter(index -> index != -1)
                 .map(index -> index + 1)
                 .filter(index -> index < stagesInOrder.size())
@@ -38,22 +39,23 @@ public class Orchestra {
         return stagesInOrder.isEmpty() ? Optional.empty() : Optional.of(stagesInOrder.get(0));
     }
 
-    public List<Stage<?>> getNextStages(Stage<?> stage) {
-        return Stream.of(getOrderedNextStage(stage).stream(), stagesBrakingOrder.stream(), stages.stream())
+    public List<Stage<?>> getNextStages(Stage<?> stageData) {
+        return Stream.of(getOrderedNextStage(stageData).stream(), stagesBrakingOrder.stream(), this.stageData.stream())
                 .flatMap(i -> i)
                 .collect(Collectors.toList());
     }
 
     public List<Stage<?>> getAllStages() {
-        return Stream.of(getStagesInOrder(), getStages(), getStagesBrakingOrder())
+        return Stream.of(getStagesInOrder(), getStageData(), getStagesBrakingOrder())
                 .flatMap(List::stream)
                 .collect(Collectors.toList());
     }
 
     public List<String> getTopics() {
-        return Stream.of(getStagesInOrder(), getStages(), getStagesBrakingOrder())
+        return Stream.of(getStagesInOrder(), getStageData(), getStagesBrakingOrder())
                 .flatMap(List::stream)
-                .map(Stage::queueName)
+                .map(Stage::stageData)
+                .map(StageData::queueName)
                 .collect(Collectors.toList());
     }
 
