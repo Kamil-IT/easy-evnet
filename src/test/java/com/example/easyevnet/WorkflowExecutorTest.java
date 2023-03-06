@@ -118,8 +118,8 @@ class WorkflowExecutorTest {
 
         HttpResponse<String> response2 = client.send(request2, HttpResponse.BodyHandlers.ofString());
 
-        ResponseList<OrchestraPersistence> actual2 = mapFromJson(response.body(), new TypeReference<>() {});
-        assertEquals(1, actual.getElements().size());
+        ResponseList<OrchestraPersistence> actual2 = mapFromJson(response2.body(), new TypeReference<>() {});
+        assertEquals(1, actual2.getElements().size());
     }
 
     private void sendMessageWithDelay(String topic, String stage) {
