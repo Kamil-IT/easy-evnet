@@ -1,4 +1,6 @@
 package com.example.easyevnet.orchestra.stage.model;
 
-public record Stage<T> (StageData<T> stageData, StageOperations stageOperations){
+import com.example.easyevnet.orchestra.database.StageType;
+
+public record Stage<T> (StageData<T> stageData, StageOperations stageOperations, StageType stageType){
 }

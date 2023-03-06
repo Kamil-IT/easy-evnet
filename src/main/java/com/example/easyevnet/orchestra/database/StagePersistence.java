@@ -1,13 +1,7 @@
 package com.example.easyevnet.orchestra.database;
 
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Temporal;
-import jakarta.persistence.TemporalType;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -24,7 +18,7 @@ import java.util.UUID;
 @Entity
 @NoArgsConstructor
 @AllArgsConstructor
-public class StatePersistence {
+public class StagePersistence {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -34,7 +28,7 @@ public class StatePersistence {
 
     private String businessId;
 
-    private String stateName;
+    private String stageName;
     private String topic;
 
     @CreationTimestamp
@@ -42,6 +36,9 @@ public class StatePersistence {
     private LocalDateTime created;
 
     private String status;
+
+    @Enumerated(EnumType.STRING)
+    private StageType stageType;
 
     private String errorMessage;
 }

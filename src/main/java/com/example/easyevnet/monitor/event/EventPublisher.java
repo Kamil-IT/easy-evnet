@@ -5,13 +5,18 @@ import java.util.List;
 
 public class EventPublisher<T> {
 
-    private static final EventPublisher<WorkflowFinishedEvent> INSTANCE = new EventPublisher<>();
+    private static final EventPublisher<StageFinishedEvent> INSTANCE_FINISH_WORKFLOW = new EventPublisher<>();
+    private static final EventPublisher<WorkflowFinishedWithErrorEvent> INSTANCE_FINISH_WITH_ERROR_WORKFLOW = new EventPublisher<>();
 
     private EventPublisher() {
     }
 
-    public static EventPublisher<WorkflowFinishedEvent> getInstanceWorkflowFinished() {
-        return INSTANCE;
+    public static EventPublisher<StageFinishedEvent> getInstanceStageFinished() {
+        return INSTANCE_FINISH_WORKFLOW;
+    }
+
+    public static EventPublisher<WorkflowFinishedWithErrorEvent> getInstanceFinishWithErrorWorkflow() {
+        return INSTANCE_FINISH_WITH_ERROR_WORKFLOW;
     }
 
     private final List<EventListener<T>> listeners = new ArrayList<>();

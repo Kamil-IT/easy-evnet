@@ -1,6 +1,6 @@
 package com.example.easyevnet.orchestra.database;
 
-public enum StateStatus {
+public enum StageStatus {
 
     PROCESSING,
     DONE,

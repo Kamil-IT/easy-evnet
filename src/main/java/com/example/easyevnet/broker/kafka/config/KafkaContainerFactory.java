@@ -1,0 +1,27 @@
+package com.example.easyevnet.broker.kafka.config;
+
+import lombok.RequiredArgsConstructor;
+import org.springframework.kafka.listener.KafkaMessageListenerContainer;
+import org.springframework.kafka.listener.MessageListener;
+
+import java.util.Collection;
+import java.util.Properties;
+import java.util.concurrent.ConcurrentLinkedQueue;
+
+@RequiredArgsConstructor
+public class KafkaContainerFactory {
+
+    private final ConcurrentLinkedQueue<KafkaListenerContainer<?,?>> listeners = new ConcurrentLinkedQueue<>();
+
+    private final Properties kafkaListenerConfig;
+
+    public <T, ID> KafkaMessageListenerContainer<T, ID> createStartedConsumer(Collection<String> topics, MessageListener<T, ID> messageConsumer) {
+        KafkaListenerContainer<T, ID> listener = new KafkaListenerContainer<>(kafkaListenerConfig);
+
+        return listener.createStartedConsumer(topics, messageConsumer);
+    }
+
+    public void stopAllListeners() {
+        listeners.forEach(KafkaListenerContainer::stopAllListeners);
+    }
+}

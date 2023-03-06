@@ -1,20 +1,23 @@
 package com.example.easyevnet.orchestra.database;
 
-import org.springframework.boot.jdbc.DataSourceBuilder;
+import lombok.NonNull;
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.repository.Repository;
-import org.springframework.jdbc.core.JdbcTemplate;
 
-import javax.sql.DataSource;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-public interface StatePersistenceRepository extends Repository<StatePersistence, UUID> {
+public interface StatePersistenceRepository extends Repository<StagePersistence, UUID> {
 
-    StatePersistence save(StatePersistence entity);
+    StagePersistence save(StagePersistence entity);
 
-    Optional<StatePersistence> findFirstByBusinessIdAndStateNameAndTopic(String businessId, String stateName, String topic);
+    Optional<StagePersistence> findFirstByBusinessIdAndStageNameAndTopic(String businessId, String stateName, String topic);
 
-    List<StatePersistence> findAllByBusinessId(String businessId);
+    List<StagePersistence> findAllByBusinessId(String businessId);
+
+    List<StagePersistence> findAllByBusinessIdAndTopicOrderByCreated(String businessId, String topic);
+
+    List<StagePersistence> findAll();
 
 }

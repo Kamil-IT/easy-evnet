@@ -1,6 +1,6 @@
 package com.example.app.config.reciver;
 
-import com.example.easyevnet.WorkflowExecutor;
+import com.example.easyevnet.WorkflowContainer;
 import com.example.easyevnet.orchestra.database.StatePersistenceService;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.common.serialization.StringDeserializer;
@@ -19,10 +19,9 @@ public class OrchestraConfiguration {
     private String brokerUrl;
 
     @Bean
-    WorkflowExecutor orchestraExecutor(StatePersistenceService statePersistenceService) {
-        return new WorkflowExecutor(kafkaProperties(), statePersistenceService);
+    WorkflowContainer<Integer> orchestraExecutor(StatePersistenceService statePersistenceServiceImpl) {
+        return new WorkflowContainer<>(kafkaProperties(), statePersistenceServiceImpl);
     }
-
 
 
     private Properties kafkaProperties() {

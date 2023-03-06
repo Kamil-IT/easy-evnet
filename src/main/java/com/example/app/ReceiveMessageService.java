@@ -1,9 +1,9 @@
 package com.example.app;
 
 import com.example.app.bussines.ShopEventType;
-import com.example.easyevnet.WorkflowExecutor;
+import com.example.easyevnet.WorkflowContainer;
 import com.example.easyevnet.orchestra.builder.OrchestraBuilder;
-import com.example.easyevnet.orchestra.orchestra.model.Orchestra;
+import com.example.easyevnet.orchestra.orchestra.model.OrchestraData;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -18,14 +18,14 @@ import java.time.Duration;
 @RequiredArgsConstructor
 public class ReceiveMessageService {
 
-    private final WorkflowExecutor workflowExecutor;
+    private final WorkflowContainer<Integer> orchestraExecutor;
 
     @PostConstruct
     public void initializeOrchestra() {
-        workflowExecutor.startOrderedWorkflow(123, orchestra());
+        orchestraExecutor.startOrderedWorkflow(123, orchestra());
     }
 
-    private Orchestra orchestra() {
+    private OrchestraData orchestra() {
         return new OrchestraBuilder()
                 .stageInOrder(log::info, ShopEventType.CREATE_ORDER)
                     .onError(e -> log.error("ERROR in ShopEventType.CREATE_ORDER"))

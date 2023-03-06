@@ -1,6 +1,7 @@
 package com.example.easyevnet.orchestra.builder;
 
-import com.example.easyevnet.orchestra.orchestra.model.Orchestra;
+import com.example.easyevnet.orchestra.database.StageType;
+import com.example.easyevnet.orchestra.orchestra.model.OrchestraData;
 import com.example.easyevnet.orchestra.stage.model.Stage;
 import com.example.easyevnet.orchestra.stage.model.StageData;
 import com.example.easyevnet.orchestra.stage.model.StageOperations;
@@ -15,6 +16,7 @@ public class StageBuilder {
     private final Consumer<String> processor;
     private final String stageName;
     private final String queueName;
+    private final StageType stageType;
 
     private Consumer<String> afterResponseProcess;
     private Consumer<String> afterResponseReceivedConsumer;
@@ -26,11 +28,13 @@ public class StageBuilder {
             Function<Stage<?>, OrchestraBuilder> addStageToOrchestraBuilder,
             Consumer<String> processor,
             String stageName,
-            String queueName) {
+            String queueName,
+            StageType stageType) {
         this.addStageToOrchestraBuilder = addStageToOrchestraBuilder;
         this.processor = processor;
         this.stageName = stageName;
         this.queueName = queueName;
+        this.stageType = stageType;
     }
 
     public StageBuilder onError(Consumer<Exception> onError) {
@@ -45,11 +49,15 @@ public class StageBuilder {
 
     public OrchestraBuilder nextStage() {
         var data = new StageData<>(stageName, queueName, timeout);
-        var operations = new StageOperations(processor, afterResponseProcess, afterResponseReceivedConsumer, onError);
-        return addStageToOrchestraBuilder.apply(new Stage<>(data, operations));
+        var operations = new StageOperations(
+                processor,
+                afterResponseProcess == null ? (i) -> {} : afterResponseProcess,
+                afterResponseReceivedConsumer == null ? (i) -> {} : afterResponseReceivedConsumer,
+                onError == null ? (i) -> {} : onError);
+        return addStageToOrchestraBuilder.apply(new Stage<>(data, operations, stageType));
     }
 
-    public Orchestra build() {
+    public OrchestraData build() {
         var data = new StageData<>(stageName, queueName, timeout);
         var operations = new StageOperations(
                 processor,
@@ -57,7 +65,7 @@ public class StageBuilder {
                 afterResponseReceivedConsumer == null ? (i) -> {} : afterResponseReceivedConsumer,
                 onError == null ? (i) -> {} : onError);
 
-        OrchestraBuilder builder = addStageToOrchestraBuilder.apply(new Stage<>(data, operations));
+        OrchestraBuilder builder = addStageToOrchestraBuilder.apply(new Stage<>(data, operations, stageType));
         return builder.build();
     }
 
@@ -68,6 +76,12 @@ public class StageBuilder {
 
     public StageBuilder afterProcessMessage(Consumer<String> afterProcessMessageConsumer) {
         this.afterResponseReceivedConsumer = afterProcessMessageConsumer;
+        return this;
+    }
+
+    public StageBuilder retry(int times) {
+//        TODO: Implement
+//        this.afterResponseReceivedConsumer = afterProcessMessageConsumer;
         return this;
     }
 }

@@ -4,10 +4,10 @@ import com.example.app.bussines.ShopEventType;
 import com.example.easyevnet.monitor.event.EventPublisher;
 import com.example.easyevnet.monitor.api.model.GetStages;
 import com.example.easyevnet.orchestra.builder.OrchestraBuilder;
-import com.example.easyevnet.orchestra.database.StatePersistence;
+import com.example.easyevnet.orchestra.database.StagePersistence;
 import com.example.easyevnet.orchestra.database.StatePersistenceRepository;
 import com.example.easyevnet.orchestra.database.StatePersistenceService;
-import com.example.easyevnet.orchestra.orchestra.model.Orchestra;
+import com.example.easyevnet.orchestra.orchestra.model.OrchestraData;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
@@ -57,7 +57,7 @@ class WorkflowExecutorTest {
     @Autowired
     private StatePersistenceRepository repository;
     @Autowired
-    private StatePersistenceService statePersistenceService;
+    private StatePersistenceService statePersistenceServiceImpl;
 
     @BeforeEach
     void setUp() {
@@ -68,9 +68,9 @@ class WorkflowExecutorTest {
     void startOrderedWorkflow() throws Exception {
 //        You need to have local kafka to run this test
         AtomicReference<String> actualMessage = new AtomicReference<>();
-        WorkflowExecutor<String> executor = new WorkflowExecutor<>(getKafkaConsumerProperties(), statePersistenceService);
+        WorkflowContainer<String> executor = new WorkflowContainer<>(getKafkaConsumerProperties(), statePersistenceServiceImpl);
 
-        EventPublisher.getInstanceWorkflowFinished().subscribe(message -> {
+        EventPublisher.getInstanceStageFinished().subscribe(message -> {
             actualMessage.set(message.message());
         });
 
@@ -88,7 +88,7 @@ class WorkflowExecutorTest {
         await().atMost(30, TimeUnit.SECONDS)
                 .untilAsserted(() -> assertEquals("Stage completed. Id: 1000", actualMessage.get()));
 
-        assertEquals(Set.of("DONE"), repository.findAllByBusinessId("1000").stream().map(StatePersistence::getStatus).collect(Collectors.toSet()));
+        assertEquals(Set.of("DONE"), repository.findAllByBusinessId("1000").stream().map(StagePersistence::getStatus).collect(Collectors.toSet()));
 
 
 
@@ -103,8 +103,8 @@ class WorkflowExecutorTest {
 
         GetStages actual = mapFromJson(response.body(), GetStages.class);
         assertEquals(3, actual.getStages().size());
-        assertEquals(List.of("DONE", "DONE", "DONE"), actual.getStages().stream().map(StatePersistence::getStatus).collect(Collectors.toList()));
-        assertEquals(List.of("1000", "1000", "1000"), actual.getStages().stream().map(StatePersistence::getBusinessId).collect(Collectors.toList()));
+        assertEquals(List.of("DONE", "DONE", "DONE"), actual.getStages().stream().map(StagePersistence::getStatus).collect(Collectors.toList()));
+        assertEquals(List.of("1000", "1000", "1000"), actual.getStages().stream().map(StagePersistence::getBusinessId).collect(Collectors.toList()));
 
     }
 
@@ -125,18 +125,18 @@ class WorkflowExecutorTest {
         return new KafkaTemplate<>(new DefaultKafkaProducerFactory<>(configProps));
     }
 
-    private Orchestra getOrchestra() {
+    private OrchestraData getOrchestra() {
         return new OrchestraBuilder()
                 .stageInOrder(System.out::println, ShopEventType.CREATE_ORDER)
-                .onError(e -> System.out.println("ERROR in ShopEventType.CREATE_ORDER"))
+                .onError(e -> System.out.println("ERROR in ShopEventType.CREATE_ORDER: " + e.getMessage()))
                 .timeout(Duration.ofSeconds(10))
                 .nextStage()
                 .stageInOrder(System.out::println, ShopEventType.CHECK_PAYMENT)
-                .onError(e -> System.out.println("ERROR in ShopEventType.CHECK_PAYMENT"))
+                .onError(e -> System.out.println("ERROR in ShopEventType.CHECK_PAYMENT: " + e.getMessage()))
                 .timeout(Duration.ofSeconds(10))
                 .nextStage()
                 .stageInOrder(System.out::println, ShopEventType.CANCEL_ORDER)
-                .onError(e -> System.out.println("ERROR in ShopEventType.CANCEL_ORDER"))
+                .onError(e -> System.out.println("ERROR in ShopEventType.CANCEL_ORDER: " + e.getMessage()))
                 .timeout(Duration.ofSeconds(10))
                 .build();
     }
