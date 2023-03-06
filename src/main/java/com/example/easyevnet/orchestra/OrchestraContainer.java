@@ -5,6 +5,7 @@ import com.example.easyevnet.orchestra.database.StagePersistence;
 import com.example.easyevnet.orchestra.database.StageStatus;
 import com.example.easyevnet.orchestra.database.StageType;
 import com.example.easyevnet.orchestra.database.StatePersistenceService;
+import com.example.easyevnet.orchestra.stage.StageExecutor;
 import com.example.easyevnet.orchestra.stage.model.Stage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -53,6 +54,8 @@ public class OrchestraContainer<ID> {
                 statePersistenceService.markProcessAsError(id, stageName, topic, "e.getMessage() - fix me");
             }
         }
+
+//        TODO: check if state is finish
 
     }
 

@@ -2,13 +2,15 @@ package com.example.easyevnet;
 
 import com.example.app.bussines.ShopEventType;
 import com.example.easyevnet.monitor.event.EventPublisher;
-import com.example.easyevnet.monitor.api.model.GetStages;
+import com.example.easyevnet.monitor.api.model.ResponseList;
 import com.example.easyevnet.orchestra.builder.OrchestraBuilder;
+import com.example.easyevnet.orchestra.database.OrchestraPersistence;
 import com.example.easyevnet.orchestra.database.StagePersistence;
 import com.example.easyevnet.orchestra.database.StatePersistenceRepository;
 import com.example.easyevnet.orchestra.database.StatePersistenceService;
 import com.example.easyevnet.orchestra.orchestra.model.OrchestraData;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
@@ -92,6 +94,7 @@ class WorkflowExecutorTest {
 
 
 
+        // GET stage
         HttpClient client = HttpClient.newHttpClient();
 
         HttpRequest request = HttpRequest.newBuilder()
@@ -101,11 +104,22 @@ class WorkflowExecutorTest {
 
         HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
 
-        GetStages actual = mapFromJson(response.body(), GetStages.class);
-        assertEquals(3, actual.getStages().size());
-        assertEquals(List.of("DONE", "DONE", "DONE"), actual.getStages().stream().map(StagePersistence::getStatus).collect(Collectors.toList()));
-        assertEquals(List.of("1000", "1000", "1000"), actual.getStages().stream().map(StagePersistence::getBusinessId).collect(Collectors.toList()));
+        ResponseList<StagePersistence> actual = mapFromJson(response.body(), new TypeReference<>() {});
+        assertEquals(3, actual.getElements().size());
+        assertEquals(List.of("DONE", "DONE", "DONE"), actual.getElements().stream().map(StagePersistence::getStatus).collect(Collectors.toList()));
+        assertEquals(List.of("1000", "1000", "1000"), actual.getElements().stream().map(StagePersistence::getBusinessId).collect(Collectors.toList()));
 
+        // GET orchestra
+
+        HttpRequest request2 = HttpRequest.newBuilder()
+                .uri(new URI("http://localhost:8080/api/v1/easyevent/monitor/orchestra"))
+                .GET()
+                .build();
+
+        HttpResponse<String> response2 = client.send(request2, HttpResponse.BodyHandlers.ofString());
+
+        ResponseList<OrchestraPersistence> actual2 = mapFromJson(response.body(), new TypeReference<>() {});
+        assertEquals(1, actual.getElements().size());
     }
 
     private void sendMessageWithDelay(String topic, String stage) {
@@ -152,7 +166,7 @@ class WorkflowExecutorTest {
         return props;
     }
 
-    protected <T> T mapFromJson(String json, Class<T> clazz) {
+    protected <T> ResponseList<T> mapFromJson(String json, TypeReference<ResponseList<T>> clazz) {
 
         ObjectMapper objectMapper = new ObjectMapper().registerModule(new JavaTimeModule());
         try {

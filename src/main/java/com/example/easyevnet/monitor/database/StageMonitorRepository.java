@@ -7,5 +7,5 @@ import org.springframework.stereotype.Repository;
 import java.util.UUID;
 
 @Repository
-public interface StateMonitorRepository extends JpaRepository<StagePersistence, UUID> {
+public interface StageMonitorRepository extends JpaRepository<StagePersistence, UUID> {
 }

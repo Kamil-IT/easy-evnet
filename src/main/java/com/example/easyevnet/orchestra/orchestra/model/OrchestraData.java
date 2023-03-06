@@ -14,12 +14,12 @@ import java.util.stream.Stream;
 @Getter
 public class OrchestraData {
 
-    private final List<Stage<?>> stageData;
+    private final List<Stage<?>> stageDefault;
     private final List<Stage<?>> stagesInOrder;
     private final List<Stage<?>> stagesBrakingOrder;
 
-    public OrchestraData(Collection<Stage<?>> stageData, Collection<Stage<?>> stagesInOrder, Collection<Stage<?>> stagesBrakingOrder) {
-        this.stageData = List.copyOf(stageData);
+    public OrchestraData(Collection<Stage<?>> stageDefault, Collection<Stage<?>> stagesInOrder, Collection<Stage<?>> stagesBrakingOrder) {
+        this.stageDefault = List.copyOf(stageDefault);
         this.stagesBrakingOrder = List.copyOf(stagesBrakingOrder);
         this.stagesInOrder = List.copyOf(stagesInOrder);
     }
@@ -39,7 +39,7 @@ public class OrchestraData {
         if (stagesData.isEmpty()) {
             return getFirstStage();
         }
-        return Optional.of(stagesInOrder.indexOf(stageData))
+        return Optional.of(stagesInOrder.indexOf(stageDefault))
                 .filter(index -> index != -1)
                 .map(index -> index + 1)
                 .filter(index -> index < stagesInOrder.size())
@@ -51,13 +51,13 @@ public class OrchestraData {
     }
 
     public List<Stage<?>> getNextStages(Stage<?> stageData) {
-        return Stream.of(getOrderedNextStage(stageData).stream(), stagesBrakingOrder.stream(), this.stageData.stream())
+        return Stream.of(getOrderedNextStage(stageData).stream(), stagesBrakingOrder.stream(), this.stageDefault.stream())
                 .flatMap(i -> i)
                 .collect(Collectors.toList());
     }
 
     public List<Stage<?>> getAllStages() {
-        return Stream.of(getStagesInOrder(), getStageData(), getStagesBrakingOrder())
+        return Stream.of(getStagesInOrder(), getStageDefault(), getStagesBrakingOrder())
                 .flatMap(List::stream)
                 .collect(Collectors.toList());
     }
@@ -69,7 +69,7 @@ public class OrchestraData {
     }
 
     public List<String> getTopics() {
-        return Stream.of(getStagesInOrder(), getStageData(), getStagesBrakingOrder())
+        return Stream.of(getStagesInOrder(), getStageDefault(), getStagesBrakingOrder())
                 .flatMap(List::stream)
                 .map(Stage::stageData)
                 .map(StageData::queueName)

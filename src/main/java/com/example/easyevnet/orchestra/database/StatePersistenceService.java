@@ -15,4 +15,6 @@ public interface StatePersistenceService {
     void markProcessAsError(String id, String stateName, String topic, String message);
 
     StagePersistence saveState(StagePersistence stagePersistence);
+
+    OrchestraPersistence saveOrchestra(OrchestraPersistence orchestraPersistence);
 }

@@ -16,6 +16,7 @@ import java.util.stream.Collectors;
 public class StatePersistenceServiceImpl implements StatePersistenceService {
 
     private final StatePersistenceRepository repository;
+    private final OrchestraPersistenceRepository repositoryOr;
 
     @Override
     @Transactional
@@ -67,5 +68,10 @@ public class StatePersistenceServiceImpl implements StatePersistenceService {
     @Override
     public StagePersistence saveState(StagePersistence stagePersistence) {
         return repository.save(stagePersistence);
+    }
+
+    @Override
+    public OrchestraPersistence saveOrchestra(OrchestraPersistence orchestraPersistence) {
+        return repositoryOr.save(orchestraPersistence);
     }
 }

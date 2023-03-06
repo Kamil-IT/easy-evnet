@@ -1,6 +1,5 @@
 package com.example.easyevnet.monitor.api.model;
 
-import com.example.easyevnet.orchestra.database.StagePersistence;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -12,6 +11,6 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class GetStages {
-    List<StagePersistence> stages;
+public class ResponseList<T> {
+    List<T> elements;
 }

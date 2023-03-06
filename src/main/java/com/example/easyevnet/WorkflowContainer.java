@@ -1,11 +1,15 @@
 package com.example.easyevnet;
 
 import com.example.easyevnet.broker.kafka.config.KafkaContainerFactory;
-import com.example.easyevnet.orchestra.OrchestraContainerFactory;
 import com.example.easyevnet.orchestra.OrchestraContainer;
-import com.example.easyevnet.orchestra.StageExecutor;
+import com.example.easyevnet.orchestra.OrchestraContainerFactory;
+import com.example.easyevnet.orchestra.database.OrchestraPersistence;
+import com.example.easyevnet.orchestra.database.OrchestraStatus;
 import com.example.easyevnet.orchestra.database.StatePersistenceService;
 import com.example.easyevnet.orchestra.orchestra.model.OrchestraData;
+import com.example.easyevnet.orchestra.stage.StageExecutor;
+import com.example.easyevnet.orchestra.stage.model.Stage;
+import com.example.easyevnet.orchestra.stage.model.StageData;
 
 import java.util.Map;
 import java.util.Properties;
@@ -19,9 +23,11 @@ public class WorkflowContainer<ID> {
     private final Map<ID, CompletableFuture<OrchestraContainer<ID>>> threads = new ConcurrentHashMap<>();
 
     private final OrchestraContainerFactory<ID> orchestraContainerFactory;
+    private final StatePersistenceService statePersistenceService;
 
     public WorkflowContainer(Properties listenerConfig, StatePersistenceService statePersistenceService) {
         this.orchestraContainerFactory = new OrchestraContainerFactory<>(new KafkaContainerFactory(listenerConfig), statePersistenceService);
+        this.statePersistenceService = statePersistenceService;
     }
 
     public void startOrderedWorkflow(ID singleWorkflowId, OrchestraData orchestraData) {
@@ -34,7 +40,14 @@ public class WorkflowContainer<ID> {
     }
 
     private void addStageToDb(ID singleWorkflowId, OrchestraData orchestraData) {
-//        Implement
+        statePersistenceService.saveOrchestra(
+                OrchestraPersistence.builder()
+                        .stagesBraking(orchestraData.getStagesBrakingOrder().stream().map(Stage::stageData).map(StageData::name).reduce(", ", String::concat))
+                        .stagesInOrder(orchestraData.getStagesInOrder().stream().map(Stage::stageData).map(StageData::name).reduce(", ", String::concat))
+                        .sagesDefault(orchestraData.getStageDefault().stream().map(Stage::stageData).map(StageData::name).reduce(", ", String::concat))
+                        .businessId(singleWorkflowId.toString())
+                        .status(OrchestraStatus.PROCESSING.toString())
+                        .build());
     }
 
     private void addStageExecutor(ID singleWorkflowId, OrchestraData orchestraData) {

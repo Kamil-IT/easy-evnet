@@ -1,13 +1,10 @@
 package com.example.easyevnet.orchestra;
 
 import com.example.easyevnet.broker.kafka.config.KafkaContainerFactory;
-import com.example.easyevnet.broker.kafka.config.KafkaListenerContainer;
 import com.example.easyevnet.orchestra.database.StatePersistenceService;
-import com.example.easyevnet.orchestra.orchestra.model.OrchestraData;
+import com.example.easyevnet.orchestra.stage.StageExecutor;
 import lombok.RequiredArgsConstructor;
 
-import java.util.List;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 @RequiredArgsConstructor
