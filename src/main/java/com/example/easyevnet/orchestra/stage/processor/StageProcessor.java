@@ -13,7 +13,34 @@ import java.util.concurrent.TimeoutException;
 
 abstract class StageProcessor {
 
-    protected static <T> StageStatus applyStage(StageOperations<T> operations, String body, Duration timeout) {
+    protected static <T> StageStatus applyStage(StageOperations<T> operations, String body, Duration timeout, int retryTimes) {
+
+        StageStatus status = StageStatus.ERROR;
+
+        int retry = 0;
+        for (; retry <= retryTimes; retry++) {
+            try {
+                status = processStage(operations, body, timeout);
+            } catch (TimeoutException e) {
+                status = StageStatus.TIMEOUT;
+                if (retry == retryTimes) {
+                    operations.onError().accept(e);
+                }
+            }
+            
+            if (!status.equals(StageStatus.TIMEOUT)) {
+                return status;
+            }
+        }
+
+        if (retry > 0) {
+            operations.onError().accept(new TimeoutException());
+        }
+
+        return status;
+    }
+
+    private static <T> StageStatus processStage(StageOperations<T> operations, String body, Duration timeout) throws TimeoutException {
         try {
             CompletableFuture<Boolean> async = CompletableFuture.supplyAsync(() -> {
                 operations.processor()
@@ -28,9 +55,6 @@ abstract class StageProcessor {
             operations.onError().accept(e);
             return StageStatus.ERROR;
 
-        } catch (TimeoutException e) {
-            operations.onError().accept(e);
-            return StageStatus.TIMEOUT;
         }
     }
 

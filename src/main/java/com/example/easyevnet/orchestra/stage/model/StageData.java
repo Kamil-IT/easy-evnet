@@ -6,7 +6,8 @@ import java.util.function.Consumer;
 public record StageData<T>(
         String name,
         String queueName,
-        Duration timeout) {
+        Duration timeout,
+        int retry) {
 
     public boolean isNameEqual(String name) {
         return name != null && name.equals(this.name);

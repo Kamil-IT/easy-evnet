@@ -23,6 +23,7 @@ public class StageBuilder {
 
     private Consumer<Exception> onError;
     private Duration timeout;
+    private int retry;
 
     StageBuilder(
             Function<Stage<?>, OrchestraBuilder> addStageToOrchestraBuilder,
@@ -48,7 +49,7 @@ public class StageBuilder {
     }
 
     public OrchestraBuilder nextStage() {
-        var data = new StageData<>(stageName, queueName, timeout);
+        var data = new StageData<>(stageName, queueName, timeout, retry);
         var operations = new StageOperations(
                 processor,
                 afterResponseProcess == null ? (i) -> {} : afterResponseProcess,
@@ -58,7 +59,7 @@ public class StageBuilder {
     }
 
     public OrchestraData build() {
-        var data = new StageData<>(stageName, queueName, timeout);
+        var data = new StageData<>(stageName, queueName, timeout, retry);
         var operations = new StageOperations(
                 processor,
                 afterResponseProcess == null ? (i) -> {} : afterResponseProcess,
@@ -80,8 +81,7 @@ public class StageBuilder {
     }
 
     public StageBuilder retry(int times) {
-//        TODO: Implement
-//        this.afterResponseReceivedConsumer = afterProcessMessageConsumer;
+        this.retry = times;
         return this;
     }
 }
