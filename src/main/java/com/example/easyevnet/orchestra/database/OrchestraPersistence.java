@@ -34,7 +34,11 @@ public class OrchestraPersistence {
     @Temporal(TemporalType.TIMESTAMP)
     private LocalDateTime created;
 
+    private LocalDateTime finished;
+
     private String status;
+
+    private String brokerUrl;
 
     private String stagesInOrder;
     private String stagesBraking;

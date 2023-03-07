@@ -17,4 +17,6 @@ public interface StatePersistenceService {
     StagePersistence saveState(StagePersistence stagePersistence);
 
     OrchestraPersistence saveOrchestra(OrchestraPersistence orchestraPersistence);
+
+    OrchestraPersistence finishOrchestra(String id);
 }

@@ -27,12 +27,10 @@ public class OrchestraContainer<ID> {
     private final KafkaContainerFactory kafkaContainerFactory;
     private final StatePersistenceService statePersistenceService;
 
-    public boolean startOrchestra() {
+    public void startOrchestra() {
         List<String> topics = stageExecutor.getTopics();
 
         kafkaContainerFactory.createStartedConsumer(topics, this::processNextStep);
-
-        return true;
     }
 
     private void processNextStep(ConsumerRecord<ID, String> rec) {
@@ -53,18 +51,21 @@ public class OrchestraContainer<ID> {
                 log.error("Stage processed with error");
                 statePersistenceService.markProcessAsError(id, stageName, topic, "e.getMessage() - fix me");
             }
+
+            if (stageExecutor.getOrchestraData().getLastStage().equals(stage)) {
+                statePersistenceService.finishOrchestra(id);
+            }
         }
-
-//        TODO: check if state is finish
-
     }
 
     private StageStatus processStage(ConsumerRecord<ID, String> rec, Stage<?> stage) {
         if (StageType.ORDERED.equals(stage.stageType())) {
             return stageExecutor.processNextOrderedStage(stage, rec.value());
+        } else if (StageType.BRAKING.equals(stage.stageType())) {
+            return stageExecutor.processNextBrakingStage(stage, rec.value());
+        } else {
+            return stageExecutor.processNextDefaultStage(stage, rec.value());
         }
-
-        return StageStatus.ERROR;
     }
 
     private void notifyStageIsProcessing(String id, Stage<?> stage, String topic) {
@@ -87,8 +88,8 @@ public class OrchestraContainer<ID> {
             return false;
 
         } else if (StageType.ORDERED.equals(stage.stageType()) &&
-                processedStages.getOrDefault(StageType.ORDERED, new HashSet<>()).stream().anyMatch(stageName -> stageName.equals(name))) {
-//            Add validation for stage is in order
+                processedStages.getOrDefault(StageType.ORDERED, new HashSet<>()).stream().anyMatch(stageName -> stageName.equals(name)) &&
+                stageExecutor.getOrchestraData().getOrderedNextStage(stage).filter(s -> s.equals(stage)).isPresent()) {
             log.error("Ordered stage already completed or in process: [" + id + ", " + stage + "]");
             return false;
 

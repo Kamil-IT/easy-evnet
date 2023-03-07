@@ -12,7 +12,7 @@ public class ProcessorOrderedStage<T> extends StageProcessor {
 
     @Override
     public <ID> StageStatus processOrderStage(ReceivedMessage<ID> message) {
-        return applyStage(stageDataToProcess.stageOperations(), message.body());
+        return applyStage(stageDataToProcess.stageOperations(), message.body(), stageDataToProcess.stageData().timeout());
     }
 
     @Override

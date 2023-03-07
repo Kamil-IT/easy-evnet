@@ -4,6 +4,7 @@ public enum StageStatus {
 
     PROCESSING,
     DONE,
+    TIMEOUT,
     ERROR;
 
     boolean equals(String name) {

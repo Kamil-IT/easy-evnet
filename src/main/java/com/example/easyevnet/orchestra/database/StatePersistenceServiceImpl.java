@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -73,5 +74,14 @@ public class StatePersistenceServiceImpl implements StatePersistenceService {
     @Override
     public OrchestraPersistence saveOrchestra(OrchestraPersistence orchestraPersistence) {
         return repositoryOr.save(orchestraPersistence);
+    }
+
+    @Override
+    public OrchestraPersistence finishOrchestra(String id) {
+        return repositoryOr.findByBusinessId(id).map(orchestraPersistence -> {
+            orchestraPersistence.setStatus(OrchestraStatus.DONE.name());
+            orchestraPersistence.setFinished(LocalDateTime.now());
+            return repositoryOr.save(orchestraPersistence);
+        }).orElseThrow();
     }
 }

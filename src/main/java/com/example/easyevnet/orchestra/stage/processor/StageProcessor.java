@@ -5,17 +5,32 @@ import com.example.easyevnet.orchestra.database.StageStatus;
 import com.example.easyevnet.orchestra.stage.model.Stage;
 import com.example.easyevnet.orchestra.stage.model.StageOperations;
 
+import java.time.Duration;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+
 abstract class StageProcessor {
 
-    protected static <T> StageStatus applyStage(StageOperations<T> operations, String body) {
+    protected static <T> StageStatus applyStage(StageOperations<T> operations, String body, Duration timeout) {
         try {
-            operations.processor()
-                    .andThen(operations.afterResponseProcess())
-                    .accept(body);
+            CompletableFuture<Boolean> async = CompletableFuture.supplyAsync(() -> {
+                operations.processor()
+                        .andThen(operations.afterResponseProcess())
+                        .accept(body);
+                return true;
+            });
+            async.get(timeout.toMillis(), TimeUnit.MILLISECONDS);
             return StageStatus.DONE;
-        } catch (Exception e) {
+
+        } catch (ExecutionException | InterruptedException e) {
             operations.onError().accept(e);
             return StageStatus.ERROR;
+
+        } catch (TimeoutException e) {
+            operations.onError().accept(e);
+            return StageStatus.TIMEOUT;
         }
     }
 

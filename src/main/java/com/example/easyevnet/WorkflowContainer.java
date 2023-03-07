@@ -23,10 +23,12 @@ public class WorkflowContainer<ID> {
     private final Map<ID, CompletableFuture<OrchestraContainer<ID>>> threads = new ConcurrentHashMap<>();
 
     private final OrchestraContainerFactory<ID> orchestraContainerFactory;
+    private final KafkaContainerFactory kafkaContainerFactory;
     private final StatePersistenceService statePersistenceService;
 
     public WorkflowContainer(Properties listenerConfig, StatePersistenceService statePersistenceService) {
-        this.orchestraContainerFactory = new OrchestraContainerFactory<>(new KafkaContainerFactory(listenerConfig), statePersistenceService);
+        this.kafkaContainerFactory = new KafkaContainerFactory(listenerConfig);
+        this.orchestraContainerFactory = new OrchestraContainerFactory<>(kafkaContainerFactory, statePersistenceService);
         this.statePersistenceService = statePersistenceService;
     }
 
@@ -46,6 +48,7 @@ public class WorkflowContainer<ID> {
                         .stagesInOrder(orchestraData.getStagesInOrder().stream().map(Stage::stageData).map(StageData::name).reduce(", ", String::concat))
                         .sagesDefault(orchestraData.getStageDefault().stream().map(Stage::stageData).map(StageData::name).reduce(", ", String::concat))
                         .businessId(singleWorkflowId.toString())
+                        .brokerUrl(kafkaContainerFactory.getBrokerUrl())
                         .status(OrchestraStatus.PROCESSING.toString())
                         .build());
     }

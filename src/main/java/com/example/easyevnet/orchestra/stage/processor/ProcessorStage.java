@@ -11,7 +11,7 @@ public class ProcessorStage<T> extends StageProcessor {
     private final Stage<T> stageDataToProcess;
 
     public <ID> StageStatus processOrderStage(ReceivedMessage<ID> message) {
-        return applyStage(stageDataToProcess.stageOperations(), message.body());
+        return applyStage(stageDataToProcess.stageOperations(), message.body(), stageDataToProcess.stageData().timeout());
     }
 
     public Boolean isPossibleToPerform(Stage<?> stageDataBeforeCurrent) {

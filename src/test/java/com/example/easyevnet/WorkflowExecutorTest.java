@@ -4,10 +4,7 @@ import com.example.app.bussines.ShopEventType;
 import com.example.easyevnet.monitor.event.EventPublisher;
 import com.example.easyevnet.monitor.api.model.ResponseList;
 import com.example.easyevnet.orchestra.builder.OrchestraBuilder;
-import com.example.easyevnet.orchestra.database.OrchestraPersistence;
-import com.example.easyevnet.orchestra.database.StagePersistence;
-import com.example.easyevnet.orchestra.database.StatePersistenceRepository;
-import com.example.easyevnet.orchestra.database.StatePersistenceService;
+import com.example.easyevnet.orchestra.database.*;
 import com.example.easyevnet.orchestra.orchestra.model.OrchestraData;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -120,6 +117,9 @@ class WorkflowExecutorTest {
 
         ResponseList<OrchestraPersistence> actual2 = mapFromJson(response2.body(), new TypeReference<>() {});
         assertEquals(1, actual2.getElements().size());
+        assertEquals(1000, new Integer(actual2.getElements().stream().findFirst().get().getBusinessId()));
+        assertEquals(OrchestraStatus.DONE.name(), actual2.getElements().stream().findFirst().get().getStatus());
+        assertEquals("localhost:29092", actual2.getElements().stream().findFirst().get().getBrokerUrl());
     }
 
     private void sendMessageWithDelay(String topic, String stage) {
