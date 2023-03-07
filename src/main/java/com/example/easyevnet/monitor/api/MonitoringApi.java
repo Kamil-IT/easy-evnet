@@ -43,8 +43,8 @@ public class MonitoringApi {
         return new ResponseList<>(orchestraMonitorRepository.findAll());
     }
 
-    @PostMapping("orchestra")
-    public SendResult<String, String> orchestra(String broker, String topic,
+    @PostMapping("messages/send")
+    public SendResult<String, String> sendMessage(String broker, String topic,
                                                 String key, String val,
                                                 Map<String, String> headers) throws ExecutionException, InterruptedException, TimeoutException {
 
