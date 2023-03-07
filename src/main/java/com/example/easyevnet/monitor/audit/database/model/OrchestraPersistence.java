@@ -1,4 +1,4 @@
-package com.example.easyevnet.orchestra.database;
+package com.example.easyevnet.monitor.audit.database.model;
 
 
 import jakarta.persistence.*;

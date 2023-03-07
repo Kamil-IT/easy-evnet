@@ -1,6 +1,6 @@
 package com.example.easyevnet.orchestra.builder;
 
-import com.example.easyevnet.orchestra.database.StageType;
+import com.example.easyevnet.orchestra.orchestra.model.StageType;
 import com.example.easyevnet.orchestra.orchestra.model.OrchestraData;
 import com.example.easyevnet.orchestra.stage.model.Stage;
 

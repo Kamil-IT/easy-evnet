@@ -1,7 +1,7 @@
 package com.example.easyevnet.orchestra.stage.processor;
 
 import com.example.easyevnet.broker.kafka.model.ReceivedMessage;
-import com.example.easyevnet.orchestra.database.StageStatus;
+import com.example.easyevnet.orchestra.orchestra.model.StageStatus;
 import com.example.easyevnet.orchestra.stage.model.Stage;
 import com.example.easyevnet.orchestra.stage.model.StageOperations;
 
@@ -27,7 +27,7 @@ abstract class StageProcessor {
                     operations.onError().accept(e);
                 }
             }
-            
+
             if (!status.equals(StageStatus.TIMEOUT)) {
                 return status;
             }

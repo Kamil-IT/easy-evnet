@@ -1,7 +1,6 @@
-package com.example.easyevnet.orchestra.database;
+package com.example.easyevnet.monitor.audit.database;
 
-import lombok.NonNull;
-import org.springframework.data.jpa.repository.JpaRepository;
+import com.example.easyevnet.monitor.audit.database.model.StagePersistence;
 import org.springframework.data.repository.Repository;
 
 import java.util.List;

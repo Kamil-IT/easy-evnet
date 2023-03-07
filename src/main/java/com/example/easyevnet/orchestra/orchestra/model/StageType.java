@@ -1,4 +1,4 @@
-package com.example.easyevnet.orchestra.database;
+package com.example.easyevnet.orchestra.orchestra.model;
 
 public enum StageType {
 

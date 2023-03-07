@@ -1,4 +1,4 @@
-package com.example.easyevnet.monitor.event;
+package com.example.easyevnet.monitor.api.event;
 
 import java.util.ArrayList;
 import java.util.List;

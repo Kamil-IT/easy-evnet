@@ -1,10 +1,10 @@
 package com.example.easyevnet.orchestra.stage;
 
 import com.example.easyevnet.broker.kafka.model.ReceivedMessage;
-import com.example.easyevnet.monitor.event.EventPublisher;
-import com.example.easyevnet.monitor.event.StageFinishedEvent;
-import com.example.easyevnet.monitor.event.WorkflowFinishedWithErrorEvent;
-import com.example.easyevnet.orchestra.database.StageStatus;
+import com.example.easyevnet.monitor.api.event.EventPublisher;
+import com.example.easyevnet.monitor.api.event.StageFinishedEvent;
+import com.example.easyevnet.monitor.api.event.WorkflowFinishedWithErrorEvent;
+import com.example.easyevnet.orchestra.orchestra.model.StageStatus;
 import com.example.easyevnet.orchestra.orchestra.model.OrchestraData;
 import com.example.easyevnet.orchestra.stage.model.Stage;
 import com.example.easyevnet.orchestra.stage.processor.ProcessorOrderedStage;

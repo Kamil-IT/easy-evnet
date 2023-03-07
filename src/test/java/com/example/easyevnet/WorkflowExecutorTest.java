@@ -1,10 +1,15 @@
 package com.example.easyevnet;
 
 import com.example.app.bussines.ShopEventType;
-import com.example.easyevnet.monitor.event.EventPublisher;
+import com.example.easyevnet.monitor.api.event.EventPublisher;
 import com.example.easyevnet.monitor.api.model.ResponseList;
+import com.example.easyevnet.monitor.audit.database.StatePersistenceRepository;
+import com.example.easyevnet.monitor.audit.database.StatePersistenceService;
 import com.example.easyevnet.orchestra.builder.OrchestraBuilder;
 import com.example.easyevnet.orchestra.database.*;
+import com.example.easyevnet.monitor.audit.database.model.OrchestraPersistence;
+import com.example.easyevnet.orchestra.orchestra.model.OrchestraStatus;
+import com.example.easyevnet.monitor.audit.database.model.StagePersistence;
 import com.example.easyevnet.orchestra.orchestra.model.OrchestraData;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;

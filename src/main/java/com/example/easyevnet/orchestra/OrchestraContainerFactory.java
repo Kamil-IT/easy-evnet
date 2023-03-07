@@ -1,7 +1,7 @@
 package com.example.easyevnet.orchestra;
 
 import com.example.easyevnet.broker.kafka.config.KafkaContainerFactory;
-import com.example.easyevnet.orchestra.database.StatePersistenceService;
+import com.example.easyevnet.monitor.audit.database.StatePersistenceService;
 import com.example.easyevnet.orchestra.stage.StageExecutor;
 import lombok.RequiredArgsConstructor;
 

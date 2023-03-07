@@ -1,6 +1,7 @@
-package com.example.easyevnet.orchestra.database;
+package com.example.easyevnet.monitor.audit.database.model;
 
 
+import com.example.easyevnet.orchestra.orchestra.model.StageType;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;

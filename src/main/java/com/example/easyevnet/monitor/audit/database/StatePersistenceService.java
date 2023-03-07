@@ -1,5 +1,8 @@
-package com.example.easyevnet.orchestra.database;
+package com.example.easyevnet.monitor.audit.database;
 
+import com.example.easyevnet.monitor.audit.database.model.OrchestraPersistence;
+import com.example.easyevnet.monitor.audit.database.model.StagePersistence;
+import com.example.easyevnet.orchestra.orchestra.model.StageType;
 import jakarta.transaction.Transactional;
 
 import java.util.Map;

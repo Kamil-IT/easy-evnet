@@ -1,5 +1,9 @@
-package com.example.easyevnet.orchestra.database;
+package com.example.easyevnet.monitor.audit.database;
 
+import com.example.easyevnet.monitor.audit.database.model.*;
+import com.example.easyevnet.orchestra.orchestra.model.OrchestraStatus;
+import com.example.easyevnet.orchestra.orchestra.model.StageStatus;
+import com.example.easyevnet.orchestra.orchestra.model.StageType;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 

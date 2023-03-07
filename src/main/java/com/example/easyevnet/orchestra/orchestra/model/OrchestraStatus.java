@@ -1,10 +1,9 @@
-package com.example.easyevnet.orchestra.database;
+package com.example.easyevnet.orchestra.orchestra.model;
 
-public enum StageStatus {
+public enum OrchestraStatus {
 
     PROCESSING,
     DONE,
-    TIMEOUT,
     ERROR;
 
     boolean equals(String name) {

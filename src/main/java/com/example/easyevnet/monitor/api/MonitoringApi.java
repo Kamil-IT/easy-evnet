@@ -1,10 +1,10 @@
 package com.example.easyevnet.monitor.api;
 
 import com.example.easyevnet.monitor.api.model.ResponseList;
-import com.example.easyevnet.monitor.database.OrchestraMonitorRepository;
-import com.example.easyevnet.monitor.database.StageMonitorRepository;
-import com.example.easyevnet.orchestra.database.OrchestraPersistence;
-import com.example.easyevnet.orchestra.database.StagePersistence;
+import com.example.easyevnet.monitor.api.database.OrchestraMonitorRepository;
+import com.example.easyevnet.monitor.api.database.StageMonitorRepository;
+import com.example.easyevnet.monitor.audit.database.model.OrchestraPersistence;
+import com.example.easyevnet.monitor.audit.database.model.StagePersistence;
 import lombok.RequiredArgsConstructor;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
