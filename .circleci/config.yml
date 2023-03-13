@@ -43,7 +43,7 @@ jobs:
 
       - run:
           name: Build image
-          command: mvn spring-boot:build-image -Dspring-boot.build-image.imageName=devcivil/backend
+          command: mvn spring-boot:build-image -Dspring-boot.build-image.imageName=devcivil/easyevent
       - run:
           name: Publish Docker Image to Docker Hub
           command:   |

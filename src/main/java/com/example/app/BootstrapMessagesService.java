@@ -62,17 +62,17 @@ public class BootstrapMessagesService {
 
     private OrchestraData orchestra() {
         return new OrchestraBuilder()
-                .stageInOrder(log::info, ShopEventType.CREATE_ORDER, String.class)
+                .stageInOrder(System.out::println, ShopEventType.CREATE_ORDER, BusinessModel.class)
                 .onError(e -> log.error("ERROR in ShopEventType.CREATE_ORDER"))
                 .timeout(Duration.ofSeconds(10))
-                .waitForResponse((r) -> System.out.println("then"))
+                .waitForResponse((r) -> System.out.println("TODO: implement"))
                 .afterProcessMessage((r) -> System.out.println("then"))
                 .nextStage()
-                .stageInOrder(log::info, ShopEventType.CHECK_PAYMENT, String.class)
+                .stageInOrder(System.out::println, ShopEventType.CHECK_PAYMENT, BusinessModel.class)
                 .onError(e -> log.error("ERROR in ShopEventType.CHECK_PAYMENT"))
                 .timeout(Duration.ofSeconds(10))
                 .nextStage()
-                .stageInOrder(log::info, ShopEventType.CANCEL_ORDER, String.class)
+                .stageInOrder(System.out::println, ShopEventType.CANCEL_ORDER, BusinessModel.class)
                 .onError(e -> log.error("ERROR in ShopEventType.CANCEL_ORDER"))
                 .timeout(Duration.ofSeconds(10))
                 .build();
