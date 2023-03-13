@@ -7,6 +7,8 @@ import com.example.easyevnet.orchestra.orchestra.model.StageType;
 import com.example.easyevnet.monitor.audit.database.StatePersistenceService;
 import com.example.easyevnet.orchestra.stage.StageExecutor;
 import com.example.easyevnet.orchestra.stage.model.Stage;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
@@ -19,13 +21,16 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.StreamSupport;
 
+import static com.example.easyevnet.TypeUtil.isCommonJavaType;
+
 @Slf4j
 @RequiredArgsConstructor
 public class OrchestraContainer<ID> {
 
     private final StageExecutor<ID> stageExecutor;
     private final KafkaContainerFactory kafkaContainerFactory;
-    private final StatePersistenceService statePersistenceService;
+    private final StatePersistenceService<ID> statePersistenceService;
+    private final ObjectMapper objectMapper;
 
     public void startOrchestra() {
         List<String> topics = stageExecutor.getTopics();
@@ -34,13 +39,15 @@ public class OrchestraContainer<ID> {
     }
 
     private void processNextStep(ConsumerRecord<ID, String> rec) {
-        String id = (String) stageExecutor.getWorkflowIdentifier();
+        ID id = rec.key();
+        String idString = getIdString(id);
+
         Stage<?> stage = getStage(rec);
         String stageName = stage.stageData().name();
         String topic = rec.topic();
 
-        if (isStageValid(id, stage, topic)) {
-            notifyStageIsProcessing(id, stage, topic);
+        if (isOrchestraStarted(id) && isStageValid(id, stage, topic)) {
+            notifyStageIsProcessing(idString, stage, topic);
 
             StageStatus status = processStage(rec, stage);
 
@@ -58,13 +65,40 @@ public class OrchestraContainer<ID> {
         }
     }
 
-    private StageStatus processStage(ConsumerRecord<ID, String> rec, Stage<?> stage) {
-        if (StageType.ORDERED.equals(stage.stageType())) {
-            return stageExecutor.processNextOrderedStage(stage, rec.value());
-        } else if (StageType.BRAKING.equals(stage.stageType())) {
-            return stageExecutor.processNextBrakingStage(stage, rec.value());
+    private boolean isOrchestraStarted(ID id) {
+        boolean orchestraStarted = statePersistenceService.isOrchestraStarted(id);
+        if (!orchestraStarted) {
+            log.error("Orchestra with Id: " + id + " not started. You are inside orchestra with id: " + stageExecutor.getWorkflowIdentifier());
+        }
+        return orchestraStarted;
+    }
+
+    private String getIdString(ID id) {
+        String idString = "Error";
+
+        if (isCommonJavaType(id)) {
+            idString = String.valueOf(id);
         } else {
-            return stageExecutor.processNextDefaultStage(stage, rec.value());
+//            TODO: Add convert from json
+        }
+        return idString;
+    }
+
+    private <T> StageStatus processStage(ConsumerRecord<ID, String> rec, Stage<T> stage) {
+        if (StageType.ORDERED.equals(stage.stageType())) {
+            return stageExecutor.processNextOrderedStage(stage, getBody(rec, stage.stageData().bodyClass()));
+        } else if (StageType.BRAKING.equals(stage.stageType())) {
+            return stageExecutor.processNextBrakingStage(stage, getBody(rec, stage.stageData().bodyClass()));
+        } else {
+            return stageExecutor.processNextDefaultStage(stage, getBody(rec, stage.stageData().bodyClass()));
+        }
+    }
+
+    private <T> T getBody(ConsumerRecord<ID, String> rec, Class<T> bodyClass) {
+        try {
+            return objectMapper.readValue(rec.value(), bodyClass);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
         }
     }
 
@@ -78,7 +112,7 @@ public class OrchestraContainer<ID> {
                 .build());
     }
 
-    private boolean isStageValid(String id, Stage<?> stage, String topic) {
+    private boolean isStageValid(ID id, Stage<?> stage, String topic) {
         List<String> allStagesName = stageExecutor.getOrchestraData().getAllStagesName();
         String name = stage.stageData().name();
         Map<StageType, Set<String>> processedStages = statePersistenceService.getProcessedStagesByType(id, topic);

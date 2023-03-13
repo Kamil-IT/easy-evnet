@@ -19,7 +19,7 @@ public class OrchestraConfiguration {
     private String brokerUrl;
 
     @Bean
-    WorkflowContainer<Integer> orchestraExecutor(StatePersistenceService statePersistenceServiceImpl) {
+    WorkflowContainer<String> orchestraExecutor(StatePersistenceService<String> statePersistenceServiceImpl) {
         return new WorkflowContainer<>(kafkaProperties(), statePersistenceServiceImpl);
     }
 

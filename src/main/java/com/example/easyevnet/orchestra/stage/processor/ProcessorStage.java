@@ -3,18 +3,20 @@ package com.example.easyevnet.orchestra.stage.processor;
 import com.example.easyevnet.broker.kafka.model.ReceivedMessage;
 import com.example.easyevnet.orchestra.orchestra.model.StageStatus;
 import com.example.easyevnet.orchestra.stage.model.Stage;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 
-@RequiredArgsConstructor
-public class ProcessorStage<T> extends StageProcessor {
+import java.lang.reflect.Type;
+
+public class ProcessorStage<ID, T> extends StageProcessor<ID, T> {
 
     private final Stage<T> stageDataToProcess;
 
-    public <ID> StageStatus processOrderStage(ReceivedMessage<ID> message) {
-        return applyStage(stageDataToProcess.stageOperations(), message.body(), stageDataToProcess.stageData().timeout(), stageDataToProcess.stageData().retry());
+    public ProcessorStage(ObjectMapper objectMapper, Stage<T> stageDataToProcess) {
+        this.stageDataToProcess = stageDataToProcess;
     }
 
-    public Boolean isPossibleToPerform(Stage<?> stageDataBeforeCurrent) {
-        return stageDataBeforeCurrent.equals(stageDataToProcess);
+    public StageStatus processOrderStage(ReceivedMessage<ID, T> message) {
+        return applyStage(stageDataToProcess.stageOperations(), message.body(), stageDataToProcess.stageData().timeout(), stageDataToProcess.stageData().retry());
     }
 }

@@ -18,7 +18,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 @Service
 // TODO: should be thread save
-public class StatePersistenceServiceImpl implements StatePersistenceService {
+public class StatePersistenceServiceImpl implements StatePersistenceService<String> {
 
     private final StatePersistenceRepository repository;
     private final OrchestraPersistenceRepository repositoryOr;
@@ -78,6 +78,11 @@ public class StatePersistenceServiceImpl implements StatePersistenceService {
     @Override
     public OrchestraPersistence saveOrchestra(OrchestraPersistence orchestraPersistence) {
         return repositoryOr.save(orchestraPersistence);
+    }
+
+    @Override
+    public boolean isOrchestraStarted(String businessId) {
+        return repositoryOr.findByBusinessId(businessId).isPresent();
     }
 
     @Override

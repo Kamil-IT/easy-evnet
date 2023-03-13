@@ -1,10 +1,13 @@
 package com.example.easyevnet.orchestra.stage.model;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+
 import java.time.Duration;
 import java.util.function.Consumer;
 
 public record StageData<T>(
         String name,
+        Class<T> bodyClass,
         String queueName,
         Duration timeout,
         int retry) {

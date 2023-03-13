@@ -10,11 +10,14 @@ import com.example.easyevnet.orchestra.orchestra.model.OrchestraData;
 import com.example.easyevnet.orchestra.stage.StageExecutor;
 import com.example.easyevnet.orchestra.stage.model.Stage;
 import com.example.easyevnet.orchestra.stage.model.StageData;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
+
+import static com.example.easyevnet.TypeUtil.objectMapper;
 
 public class WorkflowContainer<ID> {
 
@@ -24,11 +27,17 @@ public class WorkflowContainer<ID> {
 
     private final OrchestraContainerFactory<ID> orchestraContainerFactory;
     private final KafkaContainerFactory kafkaContainerFactory;
-    private final StatePersistenceService statePersistenceService;
+    private final StatePersistenceService<ID> statePersistenceService;
 
-    public WorkflowContainer(Properties listenerConfig, StatePersistenceService statePersistenceService) {
+    public WorkflowContainer(Properties listenerConfig, StatePersistenceService<ID> statePersistenceService) {
         this.kafkaContainerFactory = new KafkaContainerFactory(listenerConfig);
-        this.orchestraContainerFactory = new OrchestraContainerFactory<>(kafkaContainerFactory, statePersistenceService);
+        this.orchestraContainerFactory = new OrchestraContainerFactory<>(kafkaContainerFactory, statePersistenceService, objectMapper());
+        this.statePersistenceService = statePersistenceService;
+    }
+
+    public WorkflowContainer(Properties listenerConfig, StatePersistenceService<ID> statePersistenceService, ObjectMapper objectMapper) {
+        this.kafkaContainerFactory = new KafkaContainerFactory(listenerConfig);
+        this.orchestraContainerFactory = new OrchestraContainerFactory<>(kafkaContainerFactory, statePersistenceService, objectMapper);
         this.statePersistenceService = statePersistenceService;
     }
 

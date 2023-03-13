@@ -8,18 +8,20 @@ import jakarta.transaction.Transactional;
 import java.util.Map;
 import java.util.Set;
 
-public interface StatePersistenceService {
+public interface StatePersistenceService <ID> {
     @Transactional
     boolean isAbleToProcessIfYesStart(String id, String stateName, String topic);
-    Map<StageType, Set<String>> getProcessedStagesByType(String id, String topic);
+    Map<StageType, Set<String>> getProcessedStagesByType(ID id, String topic);
 
-    void finishProcessing(String id, String stateName, String topic);
+    void finishProcessing(ID id, String stateName, String topic);
 
-    void markProcessAsError(String id, String stateName, String topic, String message);
+    void markProcessAsError(ID id, String stateName, String topic, String message);
 
     StagePersistence saveState(StagePersistence stagePersistence);
 
     OrchestraPersistence saveOrchestra(OrchestraPersistence orchestraPersistence);
 
-    OrchestraPersistence finishOrchestra(String id);
+    boolean isOrchestraStarted(ID businessId);
+
+    OrchestraPersistence finishOrchestra(ID id);
 }

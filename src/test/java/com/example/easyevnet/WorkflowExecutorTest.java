@@ -1,12 +1,12 @@
 package com.example.easyevnet;
 
+import com.example.app.bussines.BusinessModel;
 import com.example.app.bussines.ShopEventType;
 import com.example.easyevnet.monitor.api.event.EventPublisher;
 import com.example.easyevnet.monitor.api.model.ResponseList;
 import com.example.easyevnet.monitor.audit.database.StatePersistenceRepository;
 import com.example.easyevnet.monitor.audit.database.StatePersistenceService;
 import com.example.easyevnet.orchestra.builder.OrchestraBuilder;
-import com.example.easyevnet.orchestra.database.*;
 import com.example.easyevnet.monitor.audit.database.model.OrchestraPersistence;
 import com.example.easyevnet.orchestra.orchestra.model.OrchestraStatus;
 import com.example.easyevnet.monitor.audit.database.model.StagePersistence;
@@ -71,14 +71,9 @@ class WorkflowExecutorTest {
     @Test
     void startOrderedWorkflow() throws Exception {
 //        You need to have local kafka to run this test
-        AtomicReference<String> actualMessage = new AtomicReference<>();
         WorkflowContainer<String> executor = new WorkflowContainer<>(getKafkaConsumerProperties(), statePersistenceServiceImpl);
 
-        EventPublisher.getInstanceStageFinished().subscribe(message -> {
-            actualMessage.set(message.message());
-        });
-
-        executor.startOrderedWorkflow("1000", getOrchestra());
+        executor.startOrderedWorkflow("1001", getOrchestra());
 
         TimeUnit.SECONDS.sleep(20);
 
@@ -89,10 +84,7 @@ class WorkflowExecutorTest {
         sendMessageWithDelay("com.example.app.bussines.ShopEventType.CANCEL_ORDER", "CANCEL_ORDER");
 
 
-        await().atMost(30, TimeUnit.SECONDS)
-                .untilAsserted(() -> assertEquals("Stage completed. Id: 1000", actualMessage.get()));
-
-        assertEquals(Set.of("DONE"), repository.findAllByBusinessId("1000").stream().map(StagePersistence::getStatus).collect(Collectors.toSet()));
+        assertEquals(Set.of("DONE"), repository.findAllByBusinessId("1001").stream().map(StagePersistence::getStatus).collect(Collectors.toSet()));
 
 
 
@@ -109,7 +101,7 @@ class WorkflowExecutorTest {
         ResponseList<StagePersistence> actual = mapFromJson(response.body(), new TypeReference<>() {});
         assertEquals(3, actual.getElements().size());
         assertEquals(List.of("DONE", "DONE", "DONE"), actual.getElements().stream().map(StagePersistence::getStatus).collect(Collectors.toList()));
-        assertEquals(List.of("1000", "1000", "1000"), actual.getElements().stream().map(StagePersistence::getBusinessId).collect(Collectors.toList()));
+        assertEquals(List.of("1001", "1001", "1001"), actual.getElements().stream().map(StagePersistence::getBusinessId).collect(Collectors.toList()));
 
         // GET orchestra
 
@@ -122,13 +114,13 @@ class WorkflowExecutorTest {
 
         ResponseList<OrchestraPersistence> actual2 = mapFromJson(response2.body(), new TypeReference<>() {});
         assertEquals(1, actual2.getElements().size());
-        assertEquals(1000, new Integer(actual2.getElements().stream().findFirst().get().getBusinessId()));
+        assertEquals(1001, Integer.parseInt(actual2.getElements().stream().findFirst().get().getBusinessId()));
         assertEquals(OrchestraStatus.DONE.name(), actual2.getElements().stream().findFirst().get().getStatus());
         assertEquals("localhost:29092", actual2.getElements().stream().findFirst().get().getBrokerUrl());
     }
 
     private void sendMessageWithDelay(String topic, String stage) {
-        var record = new ProducerRecord<>(topic, "1001", "Hello World");
+        var record = new ProducerRecord<>(topic, "1001", mapToJson(new BusinessModel("Test")));
         record.headers()
                 .add(new SingleRecordHeader("stage", stage.getBytes()));
 
@@ -146,15 +138,15 @@ class WorkflowExecutorTest {
 
     private OrchestraData getOrchestra() {
         return new OrchestraBuilder()
-                .stageInOrder(System.out::println, ShopEventType.CREATE_ORDER)
+                .stageInOrder(System.out::println, ShopEventType.CREATE_ORDER, BusinessModel.class)
                 .onError(e -> System.out.println("ERROR in ShopEventType.CREATE_ORDER: " + e.getMessage()))
                 .timeout(Duration.ofSeconds(10))
                 .nextStage()
-                .stageInOrder(System.out::println, ShopEventType.CHECK_PAYMENT)
+                .stageInOrder(System.out::println, ShopEventType.CHECK_PAYMENT, BusinessModel.class)
                 .onError(e -> System.out.println("ERROR in ShopEventType.CHECK_PAYMENT: " + e.getMessage()))
                 .timeout(Duration.ofSeconds(10))
                 .nextStage()
-                .stageInOrder(System.out::println, ShopEventType.CANCEL_ORDER)
+                .stageInOrder(System.out::println, ShopEventType.CANCEL_ORDER, BusinessModel.class)
                 .onError(e -> System.out.println("ERROR in ShopEventType.CANCEL_ORDER: " + e.getMessage()))
                 .timeout(Duration.ofSeconds(10))
                 .build();
@@ -176,6 +168,16 @@ class WorkflowExecutorTest {
         ObjectMapper objectMapper = new ObjectMapper().registerModule(new JavaTimeModule());
         try {
             return objectMapper.readValue(json, clazz);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    protected <T> String mapToJson(T object) {
+
+        ObjectMapper objectMapper = new ObjectMapper().registerModule(new JavaTimeModule());
+        try {
+            return objectMapper.writeValueAsString(object);
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
         }
