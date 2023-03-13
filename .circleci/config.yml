@@ -48,7 +48,7 @@ jobs:
           name: Publish Docker Image to Docker Hub
           command:   |
             echo "$DOCKERHUB_PASSWORD" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
-            docker push devcivil/backend:latest
+            docker push devcivil/easyevent:latest
 # Invoke jobs via workflows
 # See: https://circleci.com/docs/2.0/configuration-reference/#workflows
 workflows:
