@@ -2,15 +2,14 @@ package com.example.easyevnet;
 
 import com.example.app.bussines.BusinessModel;
 import com.example.app.bussines.ShopEventType;
-import com.example.easyevnet.monitor.api.event.EventPublisher;
 import com.example.easyevnet.monitor.api.model.ResponseList;
 import com.example.easyevnet.monitor.audit.database.StatePersistenceRepository;
 import com.example.easyevnet.monitor.audit.database.StatePersistenceService;
-import com.example.easyevnet.orchestra.builder.OrchestraBuilder;
 import com.example.easyevnet.monitor.audit.database.model.OrchestraPersistence;
-import com.example.easyevnet.orchestra.orchestra.model.OrchestraStatus;
 import com.example.easyevnet.monitor.audit.database.model.StagePersistence;
+import com.example.easyevnet.orchestra.builder.OrchestraBuilder;
 import com.example.easyevnet.orchestra.orchestra.model.OrchestraData;
+import com.example.easyevnet.orchestra.orchestra.model.OrchestraStatus;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -39,8 +38,8 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Duration;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 import static org.awaitility.Awaitility.await;
@@ -61,7 +60,7 @@ class WorkflowExecutorTest {
     @Autowired
     private StatePersistenceRepository repository;
     @Autowired
-    private StatePersistenceService statePersistenceServiceImpl;
+    private StatePersistenceService<String> statePersistenceServiceImpl;
 
     @BeforeEach
     void setUp() {
@@ -84,11 +83,14 @@ class WorkflowExecutorTest {
         sendMessageWithDelay("com.example.app.bussines.ShopEventType.CANCEL_ORDER", "CANCEL_ORDER");
 
 
-        assertEquals(Set.of("DONE"), repository.findAllByBusinessId("1001").stream().map(StagePersistence::getStatus).collect(Collectors.toSet()));
+        // All states are done (DB)
+        await().atMost(30, TimeUnit.SECONDS)
+                .untilAsserted(() ->
+                        assertEquals(Set.of("DONE"), repository.findAllByBusinessId("1001").stream().map(StagePersistence::getStatus).collect(Collectors.toSet())));
 
 
-
-        // GET stage
+        // GET
+        // All states are done (REST)
         HttpClient client = HttpClient.newHttpClient();
 
         HttpRequest request = HttpRequest.newBuilder()
@@ -103,8 +105,8 @@ class WorkflowExecutorTest {
         assertEquals(List.of("DONE", "DONE", "DONE"), actual.getElements().stream().map(StagePersistence::getStatus).collect(Collectors.toList()));
         assertEquals(List.of("1001", "1001", "1001"), actual.getElements().stream().map(StagePersistence::getBusinessId).collect(Collectors.toList()));
 
-        // GET orchestra
-
+        // GET
+        // Orchestra is done (REST)
         HttpRequest request2 = HttpRequest.newBuilder()
                 .uri(new URI("http://localhost:8080/api/v1/easyevent/monitor/orchestra"))
                 .GET()
@@ -124,7 +126,34 @@ class WorkflowExecutorTest {
         record.headers()
                 .add(new SingleRecordHeader("stage", stage.getBytes()));
 
+        try {
+            TimeUnit.SECONDS.sleep(2);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
         kafkaTemplate.send(record);
+    }
+
+    private void sendMessageWithDelayAsync(String topic, String stage) {
+        var record = new ProducerRecord<>(topic, "1001", mapToJson(new BusinessModel("Test")));
+        record.headers()
+                .add(new SingleRecordHeader("stage", stage.getBytes()));
+
+        try {
+            TimeUnit.SECONDS.sleep(2);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+
+        CompletableFuture.supplyAsync(() -> {
+            try {
+                TimeUnit.SECONDS.sleep(2);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+
+            return kafkaTemplate.send(record);
+        });
     }
 
     private KafkaTemplate<String, String> getKafkaTemplate() {
