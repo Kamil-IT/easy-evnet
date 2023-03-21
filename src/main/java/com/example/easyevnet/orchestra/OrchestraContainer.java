@@ -46,6 +46,8 @@ public class OrchestraContainer<ID> {
         String stageName = stage.stageData().name();
         String topic = rec.topic();
 
+        log.info("Processing " + idString + ", " + stage.name());
+
         if (isOrchestraStarted(id) && isStageValid(id, stage, topic)) {
             notifyStageIsProcessing(idString, stage, topic);
 

@@ -5,9 +5,11 @@ import com.example.easyevnet.monitor.audit.database.StatePersistenceService;
 import com.example.easyevnet.orchestra.stage.StageExecutor;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.concurrent.ConcurrentLinkedQueue;
 
+@Slf4j
 @RequiredArgsConstructor
 public class OrchestraContainerFactory<ID> {
 
@@ -22,6 +24,7 @@ public class OrchestraContainerFactory<ID> {
         OrchestraContainer<ID> container = new OrchestraContainer<>(stageExecutor, kafkaContainerFactory, statePersistenceService, objectMapper);
         listeners.add(container);
 
+        log.info("container.startOrchestra()");
         container.startOrchestra();
 
         return container;

@@ -11,11 +11,14 @@ import com.example.easyevnet.orchestra.stage.StageExecutor;
 import com.example.easyevnet.orchestra.stage.model.Stage;
 import com.example.easyevnet.orchestra.stage.model.StageData;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.annotation.Nullable;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 import static com.example.easyevnet.TypeUtil.objectMapper;
 
@@ -53,13 +56,21 @@ public class WorkflowContainer<ID> {
     private void addStageToDb(ID singleWorkflowId, OrchestraData orchestraData) {
         statePersistenceService.saveOrchestra(
                 OrchestraPersistence.builder()
-                        .stagesBraking(orchestraData.getStagesBrakingOrder().stream().map(Stage::stageData).map(StageData::name).reduce(", ", String::concat))
-                        .stagesInOrder(orchestraData.getStagesInOrder().stream().map(Stage::stageData).map(StageData::name).reduce(", ", String::concat))
-                        .sagesDefault(orchestraData.getStageDefault().stream().map(Stage::stageData).map(StageData::name).reduce(", ", String::concat))
+                        .stagesBraking(getStagesNames(orchestraData.getStagesBrakingOrder()))
+                        .stagesInOrder(getStagesNames(orchestraData.getStagesInOrder()))
+                        .sagesDefault(getStagesNames(orchestraData.getStageDefault()))
                         .businessId(singleWorkflowId.toString())
                         .brokerUrl(kafkaContainerFactory.getBrokerUrl())
                         .status(OrchestraStatus.PROCESSING.toString())
                         .build());
+    }
+
+    @Nullable
+    private static String getStagesNames(List<Stage<?>> orchestraData) {
+        String namesCollected = orchestraData.stream()
+                .map(Stage::name)
+                .collect(Collectors.joining(", "));
+        return namesCollected.isBlank() ? null : namesCollected;
     }
 
     private void addStageExecutor(ID singleWorkflowId, OrchestraData orchestraData) {

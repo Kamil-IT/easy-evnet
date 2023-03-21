@@ -38,11 +38,13 @@ public class BootstrapMessagesService {
     public void publishMessage() throws InterruptedException {
         String id = String.valueOf(ThreadLocalRandom.current().nextInt(0, Integer.MAX_VALUE));
         orchestraExecutor.startOrderedWorkflow(id, orchestra());
+        log.info("Started: " + id);
 
         var record = new ProducerRecord<>("com.example.app.bussines.ShopEventType.CREATE_ORDER", id, mapToJson(new BusinessModel("Test")));
         record.headers()
                 .add(new SingleRecordHeader("stage", "CREATE_ORDER".getBytes()));
         kafkaTemplate.send(record);
+        log.info("Send: " + "CREATE_ORDER");
 
         TimeUnit.SECONDS.sleep(1);
 
@@ -51,6 +53,7 @@ public class BootstrapMessagesService {
         record2.headers()
                 .add(new SingleRecordHeader("stage", "CHECK_PAYMENT".getBytes()));
         kafkaTemplate.send(record2);
+        log.info("Send: " + "CHECK_PAYMENT");
 
         TimeUnit.SECONDS.sleep(1);
 
@@ -58,6 +61,7 @@ public class BootstrapMessagesService {
         record3.headers()
                 .add(new SingleRecordHeader("stage", "CANCEL_ORDER".getBytes()));
         kafkaTemplate.send(record3);
+        log.info("Send: " + "CANCEL_ORDER");
     }
 
     private OrchestraData orchestra() {
