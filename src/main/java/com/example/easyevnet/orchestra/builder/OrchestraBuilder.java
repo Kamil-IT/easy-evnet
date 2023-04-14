@@ -33,9 +33,10 @@ public class OrchestraBuilder {
 
 //    To musi być bardzeij rozbudowane co oznacza ze bedzie bardziej złożony obiekt wejsciowy do fukcji processor
 //    a moze 2 argumenty? pierwszy message a drugi to bedzie detail o zrobionych sagach
-//    public <T> StageBuilder<T> addStagesBrakingOrder(Consumer<String> processor, String name) {
-//        return new StageBuilder<>(this::addStagesBrakingOrder, processor, name, "", StageType.ORDERED);
-//    }
+public <T> StageBuilder<T> stagesBrakingOrder(Consumer<T> processor, Enum<?> stageName, Class<T> bodyClass) {
+    String queueName = getQueueName(stageName);
+    return new StageBuilder<>(this::stagesBrakingOrder, processor, stageName.name(), queueName, StageType.DEFAULT, bodyClass);
+}
 
     OrchestraBuilder stage(Stage<?> stageData) {
         this.stageData.add(stageData);
@@ -47,7 +48,7 @@ public class OrchestraBuilder {
         return this;
     }
 
-    OrchestraBuilder addStagesBrakingOrder(Stage<?> stageData) {
+    OrchestraBuilder stagesBrakingOrder(Stage<?> stageData) {
         this.stagesBrakingOrder.add(stageData);
         return this;
     }

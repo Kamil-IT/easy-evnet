@@ -2,7 +2,6 @@ package com.example.easyevnet.monitor.audit.database.model;
 
 
 import com.example.easyevnet.orchestra.orchestra.model.StageType;
-import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
@@ -41,7 +40,6 @@ public class StagePersistence {
     @Temporal(TemporalType.TIMESTAMP)
     @JsonSerialize(using = LocalDateTimeSerializer.class)
     @JsonDeserialize(using = LocalDateTimeDeserializer.class)
-    @JsonFormat(pattern = "yyyy-MM-dd'T'hh:mm:ss.SSS'Z'")
     private LocalDateTime created;
 
     private String status;
