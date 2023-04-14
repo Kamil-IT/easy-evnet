@@ -79,6 +79,10 @@ public class BootstrapMessagesService {
                 .stageInOrder(System.out::println, ShopEventType.CANCEL_ORDER, BusinessModel.class)
                 .onError(e -> log.error("ERROR in ShopEventType.CANCEL_ORDER"))
                 .timeout(Duration.ofSeconds(10))
+                .nextStage()
+                .stage(System.out::println, ShopEventType.ADD_COMMENT, BusinessModel.class)
+                .onError(e -> log.error("ERROR in ShopEventType.ADD_COMMENT"))
+                .timeout(Duration.ofSeconds(10))
                 .build();
     }
 

@@ -14,4 +14,7 @@ public enum ShopEventType {
     RETURN_PACKAGE,
     CANCEL_ORDER,
 
+
+    ADD_COMMENT,
+
 }

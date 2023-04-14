@@ -37,6 +37,7 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.text.SimpleDateFormat;
 import java.time.Duration;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
@@ -80,6 +81,7 @@ class WorkflowExecutorTest {
 
         sendMessageWithDelay("com.example.app.bussines.ShopEventType.CREATE_ORDER", "CREATE_ORDER");
         TimeUnit.SECONDS.sleep(10);
+        sendMessageWithDelay("com.example.app.bussines.ShopEventType.ADD_COMMENT", "ADD_COMMENT");
         sendMessageWithDelay("com.example.app.bussines.ShopEventType.CHECK_PAYMENT", "CHECK_PAYMENT");
         TimeUnit.SECONDS.sleep(5);
         sendMessageWithDelay("com.example.app.bussines.ShopEventType.CANCEL_ORDER", "CANCEL_ORDER");
@@ -102,10 +104,11 @@ class WorkflowExecutorTest {
 
         HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
 
-        ResponseList<StagePersistence> actual = mapFromJson(response.body(), new TypeReference<>() {});
-        assertEquals(3, actual.getElements().size());
-        assertEquals(List.of("DONE", "DONE", "DONE"), actual.getElements().stream().map(StagePersistence::getStatus).collect(Collectors.toList()));
-        assertEquals(List.of("1001", "1001", "1001"), actual.getElements().stream().map(StagePersistence::getBusinessId).collect(Collectors.toList()));
+        ResponseList<StagePersistence> actual = mapFromJson(response.body(), new TypeReference<>() {
+        });
+        assertEquals(4, actual.getElements().size());
+        assertEquals(List.of("DONE", "DONE", "DONE", "DONE"), actual.getElements().stream().map(StagePersistence::getStatus).collect(Collectors.toList()));
+        assertEquals(List.of("1001", "1001", "1001", "1001"), actual.getElements().stream().map(StagePersistence::getBusinessId).collect(Collectors.toList()));
 
         // GET
         // Orchestra is done (REST)
@@ -180,6 +183,10 @@ class WorkflowExecutorTest {
                 .stageInOrder(System.out::println, ShopEventType.CANCEL_ORDER, BusinessModel.class)
                 .onError(e -> System.out.println("ERROR in ShopEventType.CANCEL_ORDER: " + e.getMessage()))
                 .timeout(Duration.ofSeconds(10))
+                .nextStage()
+                .stage(System.out::println, ShopEventType.ADD_COMMENT, BusinessModel.class)
+                .onError(e -> System.out.println("ERROR in ShopEventType.ADD_COMMENT"))
+                .timeout(Duration.ofSeconds(10))
                 .build();
     }
 
@@ -207,6 +214,7 @@ class WorkflowExecutorTest {
     protected <T> String mapToJson(T object) {
 
         ObjectMapper objectMapper = new ObjectMapper().registerModule(new JavaTimeModule());
+        objectMapper.setDateFormat(new SimpleDateFormat("yyyy-MM-dd'T'hh:mm:ss.SSS'Z'"));
         try {
             return objectMapper.writeValueAsString(object);
         } catch (JsonProcessingException e) {
