@@ -2,24 +2,27 @@ package com.example.easyevnet.broker.kafka.config;
 
 import lombok.RequiredArgsConstructor;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
-import org.springframework.kafka.listener.ConcurrentMessageListenerContainer;
-import org.springframework.kafka.listener.KafkaMessageListenerContainer;
 import org.springframework.kafka.listener.MessageListener;
 
 import java.util.Collection;
+import java.util.Map;
 import java.util.Properties;
-import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 @RequiredArgsConstructor
 public class KafkaContainerFactory {
 
-    private final ConcurrentLinkedQueue<KafkaListenerContainer<?,?>> listeners = new ConcurrentLinkedQueue<>();
+    private final Map<Collection<String>, KafkaListenerContainer<?, ?>> listeners = new ConcurrentHashMap<>();
     private final Properties kafkaListenerConfig;
 
-    public <T, ID> ConcurrentMessageListenerContainer<T, ID> createStartedConsumer(Collection<String> topics, MessageListener<T, ID> messageConsumer) {
+    public <T, ID> KafkaListenerContainer<T, ID> createStartedConsumer(Set<String> topics, MessageListener<T, ID> messageConsumer) {
         KafkaListenerContainer<T, ID> listener = new KafkaListenerContainer<>(kafkaListenerConfig);
-
-        return listener.createStartedConsumer(topics, messageConsumer);
+        listeners.computeIfAbsent(topics, (e) -> {
+            listener.createStartedConsumer(topics, messageConsumer);
+            return listener;
+        });
+        return listener;
     }
 
     public String getBrokerUrl() {
@@ -27,6 +30,6 @@ public class KafkaContainerFactory {
     }
 
     public void stopAllListeners() {
-        listeners.forEach(KafkaListenerContainer::stopAllListeners);
+        listeners.forEach((key, value) -> value.stopAllListeners());
     }
 }

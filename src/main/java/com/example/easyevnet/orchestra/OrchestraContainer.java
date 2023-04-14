@@ -1,10 +1,10 @@
 package com.example.easyevnet.orchestra;
 
 import com.example.easyevnet.broker.kafka.config.KafkaContainerFactory;
+import com.example.easyevnet.monitor.audit.database.StatePersistenceService;
 import com.example.easyevnet.monitor.audit.database.model.StagePersistence;
 import com.example.easyevnet.orchestra.orchestra.model.StageStatus;
 import com.example.easyevnet.orchestra.orchestra.model.StageType;
-import com.example.easyevnet.monitor.audit.database.StatePersistenceService;
 import com.example.easyevnet.orchestra.stage.StageExecutor;
 import com.example.easyevnet.orchestra.stage.model.Stage;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -35,7 +35,7 @@ public class OrchestraContainer<ID> {
     public void startOrchestra() {
         List<String> topics = stageExecutor.getTopics();
 
-        kafkaContainerFactory.createStartedConsumer(topics, this::processNextStep);
+        kafkaContainerFactory.createStartedConsumer(new HashSet<>(topics), this::processNextStep);
     }
 
     private void processNextStep(ConsumerRecord<ID, String> rec) {

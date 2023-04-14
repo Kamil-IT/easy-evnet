@@ -6,11 +6,11 @@ import org.springframework.kafka.core.ConsumerFactory;
 import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
 import org.springframework.kafka.listener.ConcurrentMessageListenerContainer;
 import org.springframework.kafka.listener.ContainerProperties;
-import org.springframework.kafka.listener.KafkaMessageListenerContainer;
 import org.springframework.kafka.listener.MessageListener;
 
 import java.util.Collection;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
@@ -19,9 +19,11 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 public class KafkaListenerContainer<T, ID> {
 
     private final ConsumerFactory<T, ID> consumerFactory;
-    private final ConcurrentLinkedQueue<ConcurrentMessageListenerContainer<?,?>> listener = new ConcurrentLinkedQueue<>();
+    private final ConcurrentLinkedQueue<ConcurrentMessageListenerContainer<?, ?>> listener = new ConcurrentLinkedQueue<>();
+    private final Properties kafkaListenerConfig;
 
     public KafkaListenerContainer(Properties kafkaListenerConfig) {
+        this.kafkaListenerConfig = kafkaListenerConfig;
         this.consumerFactory = new DefaultKafkaConsumerFactory<>((Map<String, Object>) (Map) kafkaListenerConfig);
     }
 
@@ -50,4 +52,17 @@ public class KafkaListenerContainer<T, ID> {
         listener.forEach(ConcurrentMessageListenerContainer::stop);
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof KafkaListenerContainer<?, ?> that)) return false;
+        return Objects.equals(consumerFactory, that.consumerFactory) &&
+                Objects.equals(listener, that.listener) &&
+                Objects.equals(kafkaListenerConfig, that.kafkaListenerConfig);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(consumerFactory, listener, kafkaListenerConfig);
+    }
 }
